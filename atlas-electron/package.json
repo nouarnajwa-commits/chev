@@ -1,0 +1,65 @@
+{
+  "name": "materia-chevalon",
+  "version": "8.3.0",
+  "description": "MATERIA — Inventaire de matière, Cimenterie du Chevalon",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/najnajwa/atlas-cimenterie-du-chevalon"
+  },
+  "main": "electron.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win --x64",
+    "build-mac": "electron-builder --mac"
+  },
+  "build": {
+    "appId": "com.chevalon.materia",
+    "productName": "MATERIA",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron.js",
+      "server.js",
+      "profile_catalogue.js",
+      "public/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "public/assets",
+        "to": "assets",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "MATERIA"
+    }
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "multer": "^2.0.0",
+    "sharp": "^0.33.4"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  }
+}
