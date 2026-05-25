@@ -1,0 +1,2756 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MATERIA</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#000;--s1:#0e0e0e;--s2:#161616;--s3:#222;--s4:#333;--s5:#666;--s6:#999;--s7:#ccc;--white:#fff;
+  --blue:#4d9fff;--green:#3ddc84;--orange:#ff9500;--red:#ff3b30;--purple:#bf5fff;
+  --f:'Helvetica Neue',Helvetica,Arial,sans-serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--white);font-family:var(--f);overflow:hidden}
+button{font-family:var(--f);cursor:pointer}
+input,textarea,select{font-family:var(--f)}
+
+/* ── SETUP DIALOG ── */
+.setup-bg{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:600;display:none;align-items:center;justify-content:center}
+.setup-bg.open{display:flex}
+.setup-box{background:var(--s1);border:1px solid var(--s3);padding:36px 44px;width:460px;text-align:center}
+.setup-title{font-size:22px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+.setup-sub{font-size:10px;color:var(--s5);letter-spacing:.1em;margin-bottom:28px}
+.setup-lbl{font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--s4);text-align:left;display:block;margin-bottom:5px}
+.setup-inp{width:100%;background:var(--s2);border:1px solid var(--s3);color:var(--white);font-size:12px;padding:10px 12px;outline:none;margin-bottom:14px}
+.setup-inp:focus{border-color:var(--s5)}
+.setup-inp::placeholder{color:var(--s4)}
+.setup-link{font-size:9px;color:var(--blue);text-decoration:none;display:block;margin-top:-10px;margin-bottom:14px;text-align:left}
+.btn-setup{width:100%;padding:12px;background:var(--white);color:var(--bg);border:none;font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin-top:6px}
+.btn-setup:hover{opacity:.85}
+.setup-err{color:var(--red);font-size:9px;margin-bottom:8px;display:none}
+.setup-skip{font-size:8px;color:var(--s5);margin-top:12px;cursor:pointer;text-decoration:underline}
+.setup-skip:hover{color:var(--white)}
+
+/* ── PROJECT SELECTOR ── */
+.proj-screen{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.proj-screen.hidden{display:none}
+.proj-header{text-align:center;margin-bottom:36px}
+.proj-app-name{font-size:32px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px}
+.proj-app-sub{font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--s5)}
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;max-width:860px;width:90vw;max-height:55vh;overflow-y:auto;padding-right:4px}
+.proj-grid::-webkit-scrollbar{width:2px}
+.proj-grid::-webkit-scrollbar-thumb{background:var(--s3)}
+.proj-card{background:var(--s1);border:1px solid var(--s3);padding:14px;cursor:pointer;transition:border-color .15s;position:relative}
+.proj-card:hover{border-color:var(--white)}
+.proj-card-name{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}
+.proj-card-desc{font-size:9px;color:var(--s5);line-height:1.4}
+.proj-card-date{font-size:7px;color:var(--s4);margin-top:7px;letter-spacing:.08em}
+.proj-card-del{position:absolute;top:7px;right:7px;background:none;border:none;color:var(--s4);font-size:11px;cursor:pointer;opacity:0;transition:opacity .15s}
+.proj-card:hover .proj-card-del{opacity:1}
+.proj-card-del:hover{color:var(--red)}
+.proj-new{border:1px dashed var(--s3);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:5px;padding:14px;cursor:pointer;transition:all .15s;min-height:75px}
+.proj-new:hover{border-color:var(--white);background:var(--s2)}
+.proj-new-icon{font-size:16px;color:var(--s4)}
+.proj-new-label{font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--s5)}
+.proj-create-form{max-width:380px;width:90vw;margin-top:18px;display:none}
+.proj-create-form.open{display:block}
+.proj-inp{width:100%;background:var(--s2);border:1px solid var(--s3);color:var(--white);font-size:11px;padding:9px 11px;outline:none;margin-bottom:6px}
+.proj-inp:focus{border-color:var(--white)}
+.proj-inp::placeholder{color:var(--s4)}
+.proj-create-btns{display:flex;gap:5px}
+.btn-proj-create{flex:1;padding:9px;background:var(--white);color:var(--bg);border:none;font-size:8px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.btn-proj-cancel{padding:9px 14px;background:none;border:1px solid var(--s3);color:var(--s5);font-size:8px;letter-spacing:.1em;text-transform:uppercase}
+
+/* ── APP SHELL ── */
+.app{display:flex;height:100vh}
+.sidebar{width:196px;min-width:196px;background:var(--s1);border-right:1px solid var(--s3);display:flex;flex-direction:column;overflow:hidden}
+.s-brand{padding:12px 13px 9px;border-bottom:1px solid var(--s3);cursor:pointer}
+.s-brand:hover .s-back{color:var(--white)}
+.s-back{font-size:7px;letter-spacing:.16em;text-transform:uppercase;color:var(--s5);margin-bottom:2px;transition:color .15s}
+.s-app-name{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.s-proj-name{font-size:9px;color:var(--s5);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s-stats{display:flex;gap:10px;padding:7px 13px;border-bottom:1px solid var(--s3)}
+.s-stat span:first-child{display:block;font-size:16px;font-weight:700;line-height:1}
+.s-stat span:last-child{display:block;font-size:6px;letter-spacing:.12em;text-transform:uppercase;color:var(--s5);margin-top:1px}
+.nav-tabs{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--s3)}
+.nav-tab{flex:1;min-width:33%;padding:6px 2px;background:none;border:none;color:var(--s5);font-size:6px;letter-spacing:.08em;text-transform:uppercase;transition:all .15s;border-bottom:2px solid transparent}
+.nav-tab.active{color:var(--white);border-bottom-color:var(--white)}
+.nav-tab:hover:not(.active){color:var(--s7)}
+.cat-list{flex:1;overflow-y:auto}
+.cat-list::-webkit-scrollbar{width:2px}
+.cat-list::-webkit-scrollbar-thumb{background:var(--s3)}
+.cat-item{display:flex;align-items:center;justify-content:space-between;padding:5px 13px;cursor:pointer;border-left:2px solid transparent;transition:background .1s}
+.cat-item:hover{background:var(--s2)}
+.cat-item.active{border-left-color:var(--white);background:var(--s2)}
+.cat-name{font-size:8px;color:var(--s5);text-transform:uppercase;letter-spacing:.06em}
+.cat-item.active .cat-name{color:var(--white)}
+.cat-n{font-size:8px;font-weight:700;color:var(--s4)}
+.cat-item.active .cat-n{color:var(--white)}
+.s-foot{padding:7px 11px;border-top:1px solid var(--s3);display:flex;flex-direction:column;gap:4px}
+.btn-upload{width:100%;padding:7px;background:var(--white);color:var(--bg);border:none;font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;transition:opacity .15s}
+.btn-upload:hover{opacity:.85}
+.btn-sm{width:100%;padding:5px;background:none;border:1px solid var(--s3);color:var(--s5);font-size:7px;letter-spacing:.09em;text-transform:uppercase;text-align:center;text-decoration:none;display:block;transition:all .15s;cursor:pointer}
+.btn-sm:hover{border-color:var(--s5);color:var(--white)}
+.fmt-note{font-size:6px;color:var(--s4);text-align:center;letter-spacing:.06em}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{display:flex;align-items:center;gap:7px;padding:7px 12px;border-bottom:1px solid var(--s3);background:var(--s1)}
+.topbar-title{font-size:7px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--s5);min-width:90px;white-space:nowrap}
+.search{flex:1;background:var(--s2);border:1px solid var(--s3);padding:5px 8px;color:var(--white);font-size:11px;outline:none}
+.search:focus{border-color:var(--s5)}
+.search::placeholder{color:var(--s4)}
+.sort-sel{background:var(--s2);border:1px solid var(--s3);color:var(--s5);font-size:7px;letter-spacing:.08em;text-transform:uppercase;padding:4px 6px;outline:none}
+.view-btns{display:flex;gap:1px}
+.view-btn{background:var(--s2);border:1px solid var(--s3);color:var(--s4);font-size:10px;padding:3px 6px;transition:all .12s;line-height:1}
+.view-btn.on{background:var(--white);color:var(--bg);border-color:var(--white)}
+
+/* ── GALLERY ── */
+.grid-wrap{flex:1;overflow-y:auto;padding:2px}
+.grid-wrap::-webkit-scrollbar{width:3px}
+.grid-wrap::-webkit-scrollbar-thumb{background:var(--s3)}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:2px}
+.photo-grid.list{grid-template-columns:1fr}
+.card{position:relative;background:var(--s1);cursor:pointer;overflow:hidden}
+.card:hover .card-ov{opacity:1}
+.card:hover .card-img{transform:scale(1.04)}
+.card-thumb{aspect-ratio:1;overflow:hidden;position:relative}
+.photo-grid.list .card-thumb{aspect-ratio:16/7}
+.card-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.card-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9) 0%,transparent 55%);opacity:0;transition:opacity .2s;display:flex;flex-direction:column;justify-content:flex-end;padding:6px 8px}
+.card-cats{display:flex;flex-wrap:wrap;gap:2px;margin-bottom:2px}
+.card-cat{font-size:6px;letter-spacing:.08em;text-transform:uppercase;border:1px solid rgba(255,255,255,.35);color:rgba(255,255,255,.85);padding:1px 3px}
+.card-inv-badge{font-size:6px;color:var(--blue);border:1px solid rgba(77,159,255,.3);padding:1px 3px;background:rgba(77,159,255,.08)}
+.card-det-badge{font-size:6px;color:var(--purple);border:1px solid rgba(191,95,255,.3);padding:1px 3px;background:rgba(191,95,255,.08)}
+.card-meta{padding:4px 6px 5px}
+.card-fname{font-size:7px;color:var(--s5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-row{display:flex;align-items:center;gap:5px;margin-top:2px}
+.card-dots{display:flex;gap:2px}
+.dot{width:4px;height:4px;border-radius:50%;background:var(--s3)}
+.dot.on{background:var(--white)}
+.card-loc-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+.file-badge{position:absolute;top:4px;right:4px;font-size:6px;letter-spacing:.08em;text-transform:uppercase;padding:1px 3px;background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7)}
+.file-badge.raw{border-color:rgba(255,149,0,.5);color:rgba(255,149,0,.9)}
+.loc-badge{position:absolute;bottom:4px;right:4px;width:7px;height:7px;border-radius:50%;background:var(--green);border:1px solid rgba(255,255,255,.4)}
+
+/* ── SECTION VIEWS ── */
+.section-view{flex:1;overflow-y:auto;padding:14px}
+.section-view::-webkit-scrollbar{width:3px}
+.section-view::-webkit-scrollbar-thumb{background:var(--s3)}
+.section-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.section-title{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.section-sub{font-size:8px;color:var(--s5);letter-spacing:.07em;margin-top:2px}
+.btn-section-export{padding:4px 11px;background:none;border:1px solid var(--s3);color:var(--s5);font-size:7px;letter-spacing:.09em;text-transform:uppercase;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-section-export:hover{border-color:var(--white);color:var(--white)}
+
+/* ── INVENTORY ── */
+.inv-family{margin-bottom:9px;border:1px solid var(--s3)}
+.inv-fam-head{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--s2);cursor:pointer;user-select:none}
+.inv-fam-head:hover{background:var(--s3)}
+.inv-fam-label{font-size:8px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.inv-fam-total{font-size:8px;color:var(--s5)}
+.inv-fam-toggle{font-size:9px;color:var(--s5);transition:transform .2s}
+.inv-fam-body{display:none}
+.inv-fam-body.open{display:block}
+.inv-sub{border-top:1px solid var(--s3);padding:0 10px}
+.inv-sub-head{font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--s5);padding:4px 0 2px}
+.inv-table{width:100%;border-collapse:collapse;margin-bottom:5px}
+.inv-table th{font-size:6px;letter-spacing:.1em;text-transform:uppercase;color:var(--s4);padding:2px 4px;text-align:left;border-bottom:1px solid var(--s3)}
+.inv-table td{font-size:9px;padding:3px 4px;border-bottom:1px solid var(--s3);color:var(--s7)}
+.inv-table tr:last-child td{border-bottom:none}
+.inv-table tr:hover td{background:var(--s2)}
+.cond-badge{display:inline-block;font-size:6px;padding:1px 4px;border-radius:1px;letter-spacing:.07em;text-transform:uppercase}
+.cond-intact{background:rgba(61,220,132,.12);color:var(--green);border:1px solid rgba(61,220,132,.3)}
+.cond-reusable{background:rgba(77,159,255,.12);color:var(--blue);border:1px solid rgba(77,159,255,.3)}
+.cond-degraded{background:rgba(255,149,0,.1);color:var(--orange);border:1px solid rgba(255,149,0,.3)}
+.cond-non-reusable{background:rgba(255,59,48,.1);color:var(--red);border:1px solid rgba(255,59,48,.3)}
+.inv-actions{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.btn-inv{padding:4px 11px;background:none;border:1px solid var(--s3);color:var(--s5);font-size:7px;letter-spacing:.08em;text-transform:uppercase;transition:all .15s}
+.btn-inv:hover{border-color:var(--white);color:var(--white)}
+.btn-inv.primary{background:var(--white);color:var(--bg);border-color:var(--white)}
+.tax-editor{background:var(--s1);border:1px solid var(--s3);padding:10px;margin-bottom:10px;display:none}
+.tax-editor.open{display:block}
+.tax-fam-row{display:flex;align-items:center;gap:4px;padding:3px 0;border-bottom:1px solid var(--s3)}
+.tax-edit-input{background:var(--s2);border:1px solid var(--s3);color:var(--white);font-size:9px;padding:2px 5px;outline:none}
+.tax-edit-input:focus{border-color:var(--s5)}
+.btn-tax{padding:2px 6px;background:none;border:1px solid var(--s3);color:var(--s5);font-size:7px;letter-spacing:.07em;text-transform:uppercase;transition:all .12s}
+.btn-tax:hover{border-color:var(--white);color:var(--white)}
+.btn-tax.del:hover{border-color:var(--red);color:var(--red)}
+.btn-tax.add{border-color:rgba(77,159,255,.4);color:var(--blue)}
+.inv-qty-input{width:44px;background:var(--s2);border:1px solid var(--s3);color:var(--white);font-size:9px;padding:1px 4px;text-align:center;outline:none}
+.inv-qty-input:focus{border-color:var(--blue)}
+.inv-subtype-input{background:var(--s2);border:1px solid var(--s3);color:var(--blue);font-size:8px;font-family:'Helvetica Neue',monospace;padding:1px 5px;outline:none;letter-spacing:.04em;min-width:80px;max-width:160px;font-weight:500}
+.inv-subtype-input::placeholder{color:var(--s4);font-style:italic;font-weight:400}
+.inv-subtype-input:focus{border-color:var(--blue);background:var(--s1)}
+.inv-dims{display:flex;align-items:center;gap:3px;margin-top:4px;flex-wrap:wrap;font-size:8px}
+.inv-cont{display:flex;align-items:center;gap:4px;margin-top:3px;padding:3px 5px;background:var(--s1);border-left:2px solid var(--blue);font-size:8px;flex-wrap:wrap}
+.dim-label{font-size:7px;letter-spacing:.08em;text-transform:uppercase;color:var(--s4);min-width:8px}
+.dim-input{width:40px;background:var(--s2);border:1px solid var(--s3);color:var(--white);font-size:8px;padding:1px 3px;text-align:center;outline:none}
+.dim-input:focus{border-color:var(--blue)}
+.dim-unit{font-size:7px;color:var(--s4);margin-right:2px}
+.dim-x{font-size:8px;color:var(--s4);margin:0 1px}
+.dim-derived{font-size:7px;color:var(--green);margin-left:4px}
+.mode-badge{font-size:6.5px;letter-spacing:.08em;text-transform:uppercase;padding:1px 5px;border:1px solid;cursor:pointer;user-select:none}
+.mode-discrete{color:var(--s6);border-color:var(--s4);background:transparent}
+.mode-continuous{color:var(--blue);border-color:var(--blue);background:rgba(77,159,255,.08)}
+.mode-badge:hover{filter:brightness(1.3)}
+.btn-inv-del{background:none;border:none;color:var(--s4);font-size:10px;cursor:pointer;padding:0 2px;line-height:1;transition:color .12s}
+.btn-inv-del:hover{color:var(--red)}
+.inv-add-row{display:flex;gap:4px;flex-wrap:wrap;margin-top:7px;padding-top:6px;border-top:1px solid var(--s3)}
+.inv-add-input{background:var(--s2);border:1px solid var(--s3);color:var(--white);font-size:9px;padding:3px 5px;outline:none;min-width:0}
+.inv-add-input:focus{border-color:var(--blue)}
+.inv-add-input::placeholder{color:var(--s4)}
+.btn-inv-add{background:var(--blue);color:var(--white);border:none;padding:3px 8px;font-size:7px;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+
+/* ── MAP 3D ── */
+#map-3d-canvas{cursor:crosshair}
+.pin-3d{position:absolute;transform:translate(-50%,-100%);pointer-events:all;cursor:pointer;z-index:10}
+.pin-3d-dot{width:10px;height:10px;border-radius:50%;border:2px solid #fff;background:var(--blue);box-shadow:0 0 6px rgba(0,0,0,.8)}
+.pin-3d-line{width:2px;height:14px;background:rgba(255,255,255,.6);margin:0 auto}
+.pin-3d-label{font-size:7px;background:rgba(0,0,0,.8);padding:1px 4px;border:1px solid var(--s3);color:var(--white);white-space:nowrap;opacity:0;transition:opacity .15s;text-align:center}
+.pin-3d:hover .pin-3d-label{opacity:1}
+/* ── GEOMETRIE — typologies morphologiques ── */
+.geom-group .geom-icon{width:42px;height:42px;flex-shrink:0;color:var(--white);background:var(--s2);border:1px solid var(--s3);padding:5px;display:flex;align-items:center;justify-content:center}
+.geom-group .geom-icon svg{width:100%;height:100%}
+.geom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+.geom-card{display:flex;flex-direction:column;border:1px solid var(--s3);background:var(--s1)}
+.geom-card-photo{position:relative;width:100%;aspect-ratio:1;overflow:hidden;cursor:pointer}
+.geom-card-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.class-card-delete{position:absolute;top:4px;right:30px;background:rgba(0,0,0,.85);border:1px solid rgba(255,59,48,.7);color:var(--red);font-size:10px;width:22px;height:22px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;z-index:20;padding:0;opacity:0;transition:opacity .15s}
+.class-card:hover .class-card-delete,.geom-card:hover .class-card-delete{opacity:1}
+.class-card-delete:hover{background:var(--red);color:#fff}
+.geom-card-vector{width:100%;aspect-ratio:1;background:#fff;color:#000;display:flex;align-items:center;justify-content:center;border-top:1px solid var(--s3)}
+.geom-card-vector svg{width:100%;height:100%;padding:8px}
+.geom-vec-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;color:#999}
+.geom-vec-btn{background:transparent;border:1px solid #999;color:#666;font-size:7px;padding:4px 10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.geom-vec-btn:hover{border-color:#000;color:#000}
+.geom-vec-loading{font-size:14px;color:#999;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:0.4}}
+.geom-card-label{padding:5px 7px;font-size:7px;color:var(--s5);letter-spacing:.04em;border-top:1px solid var(--s3);background:var(--s2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* ── PROPRIÉTÉS PHYSICO-CHIMIQUES ── */
+.prop-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--s3)}
+.prop-mode-tabs{display:flex;gap:1px}
+.prop-mode-tab{padding:5px 12px;background:none;border:1px solid var(--s3);color:var(--s5);font-size:7px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.prop-mode-tab.active{background:var(--white);color:var(--bg);border-color:var(--white)}
+.prop-mode-tab:hover:not(.active){color:var(--white)}
+.prop-stats{font-size:7px;color:var(--s5);letter-spacing:.06em;text-transform:uppercase}
+.prop-table-wrap{overflow:auto;border:1px solid var(--s3)}
+.prop-table{width:100%;border-collapse:collapse;font-size:8px}
+.prop-table th{background:var(--s2);padding:5px 6px;text-align:left;font-size:6.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--s5);border-bottom:1px solid var(--s3);white-space:nowrap}
+.prop-table td{padding:3px 5px;border-bottom:1px solid var(--s3);font-size:8.5px}
+.prop-table tbody tr:hover{background:var(--s1)}
+.prop-row-empty .prop-name{color:var(--s5)}
+.prop-row-filled .prop-name{color:var(--white);font-weight:500}
+.prop-name{min-width:140px;max-width:180px}
+.prop-qty{color:var(--s5);text-align:center;width:30px}
+.prop-input{width:55px;background:var(--s2);border:1px solid var(--s3);color:var(--white);font-size:8px;padding:1px 4px;outline:none;text-align:center}
+.prop-input.prop-input-text{width:90px;text-align:left}
+.prop-input:focus{border-color:var(--blue)}
+.prop-est-btn{background:transparent;border:1px solid var(--purple);color:var(--purple);font-size:9px;width:22px;height:18px;cursor:pointer;line-height:1;padding:0}
+.prop-est-btn:hover{background:rgba(157,108,255,.15)}
+.prop-elem-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+.prop-elem-card{display:flex;flex-direction:column;border:1px solid var(--s3);background:var(--s1);overflow:hidden;cursor:pointer;transition:border-color .15s}
+.prop-elem-card:hover{border-color:var(--white)}
+.prop-elem-card img{width:100%;height:100px;object-fit:cover;display:block}
+.prop-elem-body{padding:6px 8px}
+.prop-elem-name{font-size:9px;font-weight:600;margin-bottom:2px}
+.prop-elem-qty{font-size:6.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--s5);margin-bottom:4px}
+.prop-elem-specs{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:3px}
+.prop-elem-specs span{font-size:7px;color:var(--white);background:var(--s2);padding:1px 4px;border:1px solid var(--s3)}
+.prop-elem-role{font-size:7px;color:var(--blue);margin-top:3px;letter-spacing:.04em;font-style:italic}
+.prop-warn{margin-top:14px;padding:10px;border:1px solid var(--orange);background:rgba(255,149,0,.08)}
+.prop-warn-title{font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);margin-bottom:5px;font-weight:600}
+.prop-warn-body{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:6px}
+.prop-warn-pill{font-size:7px;background:var(--s2);border:1px solid var(--s3);color:var(--s7);padding:1px 6px}
+/* ── MAP ── */
+.map-view{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.map-toolbar{display:flex;align-items:center;gap:7px;padding:6px 11px;border-bottom:1px solid var(--s3);background:var(--s1);flex-wrap:wrap}
+.map-mode-btn{padding:4px 9px;background:none;border:1px solid var(--s3);color:var(--s5);font-size:7px;letter-spacing:.08em;text-transform:uppercase;transition:all .15s}
+.map-mode-btn.active{background:var(--white);color:var(--bg);border-color:var(--white)}
+.map-hint{font-size:7px;color:var(--s5);letter-spacing:.07em;flex:1}
+.map-container{flex:1;overflow:hidden;position:relative;cursor:crosshair}
+.map-container.view-mode{cursor:default}
+.map-img{width:100%;height:100%;object-fit:contain;display:block;user-select:none}
+.map-pins-layer{position:absolute;inset:0;pointer-events:none;z-index:5}
+.map-pin{position:absolute;transform:translate(-50%,-50%);pointer-events:all;cursor:pointer}
+.map-pin-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--white);background:var(--red);transition:transform .15s;box-shadow:0 0 8px rgba(255,59,48,.8)}
+.map-pin:hover .map-pin-dot{transform:scale(1.5)}
+.map-pin-label{position:absolute;top:-15px;left:50%;transform:translateX(-50%);font-size:7px;white-space:nowrap;background:rgba(0,0,0,.8);padding:1px 4px;border:1px solid var(--s3);pointer-events:none;opacity:0;transition:opacity .15s}
+.map-pin:hover .map-pin-label{opacity:1}
+.cluster-marker{position:absolute;transform:translate(-50%,-50%);pointer-events:all;cursor:pointer}
+.cluster-bubble{background:rgba(255,59,48,.15);border:2px solid rgba(255,59,48,.7);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;transition:all .2s}
+.cluster-bubble:hover{background:rgba(255,59,48,.3);transform:scale(1.1)}
+.cluster-count{font-size:16px;font-weight:700;color:var(--white);line-height:1}
+.cluster-name{font-size:7px;color:rgba(255,200,200,.9);letter-spacing:.06em;text-transform:uppercase;text-align:center;max-width:70px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+.cluster-edit-input{background:rgba(0,0,0,.8);border:1px solid var(--blue);color:var(--white);font-size:8px;padding:2px 5px;outline:none;width:70px;text-align:center}
+.map-legend{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.75);border:1px solid var(--s3);padding:6px 10px;font-size:7px;color:var(--s5);letter-spacing:.07em}
+.map-legend div{display:flex;align-items:center;gap:5px;margin-bottom:2px}
+.map-legend div:last-child{margin-bottom:0}
+.legend-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* ── CLUSTER MODAL ── */
+.cluster-modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:150;display:none;align-items:center;justify-content:center}
+.cluster-modal-bg.open{display:flex}
+.cluster-modal{background:var(--s1);border:1px solid var(--s3);width:700px;max-width:92vw;max-height:85vh;display:flex;flex-direction:column;overflow:hidden}
+.cluster-modal-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--s3)}
+.cluster-modal-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.cluster-modal-count{font-size:9px;color:var(--s5)}
+.btn-cluster-close{background:none;border:none;color:var(--s5);font-size:16px;cursor:pointer;transition:color .12s}
+.btn-cluster-close:hover{color:var(--white)}
+.cluster-modal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:3px;padding:12px;overflow-y:auto;flex:1}
+.cluster-modal-grid::-webkit-scrollbar{width:3px}
+.cluster-modal-grid::-webkit-scrollbar-thumb{background:var(--s3)}
+.cluster-photo-card{cursor:pointer;border:1px solid var(--s3);overflow:hidden;transition:border-color .15s}
+.cluster-photo-card:hover{border-color:var(--white)}
+.cluster-photo-card img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.cluster-photo-name{font-size:7px;color:var(--s5);padding:3px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--s1)}
+
+/* ── CLASSEMENT ── */
+.class-group{margin-bottom:14px;border:1px solid var(--s3)}
+.class-group-head{display:flex;align-items:center;justify-content:space-between;padding:7px 11px;background:var(--s2);cursor:pointer;user-select:none}
+.class-group-head:hover{background:var(--s3)}
+.class-group-label{font-size:8px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.class-group-meta{display:flex;align-items:center;gap:7px}
+.class-group-count{font-size:8px;color:var(--s5)}
+.class-group-toggle{font-size:9px;color:var(--s5);transition:transform .2s}
+.class-group-body{display:none;padding:7px 9px 9px}
+.class-group-body.open{display:block}
+.class-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:3px;margin-top:5px}
+.class-card{position:relative;cursor:pointer;overflow:hidden;border:1px solid var(--s3);transition:border-color .15s}
+.class-card:hover{border-color:var(--white)}
+.class-card img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.class-card-label{padding:3px 5px;font-size:7px;color:var(--s5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--s1)}
+.class-card-remove{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.7);border:1px solid rgba(255,59,48,.4);color:var(--red);font-size:8px;padding:1px 4px;cursor:pointer;opacity:0;transition:opacity .15s;line-height:1}
+.class-card:hover .class-card-remove{opacity:1}
+
+/* ── DETECTION ── */
+.det-toolbar{display:flex;align-items:center;gap:7px;padding:9px 13px;border-bottom:1px solid var(--s3);background:var(--s1);flex-wrap:wrap}
+.det-input{background:var(--s2);border:1px solid var(--s3);color:var(--white);font-size:10px;padding:4px 7px;outline:none}
+.det-input:focus{border-color:var(--purple)}
+.det-input::placeholder{color:var(--s4)}
+.btn-det{padding:5px 14px;background:var(--purple);color:var(--white);border:none;font-size:7px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+.btn-det:hover{opacity:.85}
+.btn-det:disabled{opacity:.4;cursor:wait}
+.btn-det-outline{padding:5px 11px;background:none;border:1px solid var(--s3);color:var(--s5);font-size:7px;letter-spacing:.09em;text-transform:uppercase;cursor:pointer;transition:all .15s}
+.btn-det-outline:hover{border-color:var(--purple);color:var(--purple)}
+.det-table{width:100%;border-collapse:collapse}
+.det-table th{font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--s4);padding:4px 8px;text-align:left;border-bottom:1px solid var(--s3);background:var(--s2)}
+.det-table td{font-size:10px;padding:5px 8px;border-bottom:1px solid var(--s3);color:var(--s7);vertical-align:middle}
+.det-table tr:last-child td{border-bottom:none}
+.det-table tr:hover td{background:var(--s2)}
+.det-count-input{width:52px;background:var(--s2);border:1px solid var(--s3);color:var(--white);font-size:9px;padding:2px 4px;text-align:center;outline:none}
+.det-count-input:focus{border-color:var(--purple)}
+.det-conf-bar{height:3px;background:var(--s3);width:55px;display:inline-block;vertical-align:middle;margin-left:3px;overflow:hidden;border-radius:1px}
+.det-conf-fill{height:100%;background:var(--purple)}
+.det-photos{display:flex;gap:2px;flex-wrap:wrap}
+.det-photo-thumb{width:28px;height:28px;object-fit:cover;cursor:pointer;border:1px solid var(--s3);transition:border-color .15s}
+.det-photo-thumb:hover{border-color:var(--purple)}
+.det-del-row{background:none;border:none;color:var(--s4);font-size:10px;cursor:pointer;padding:0 2px;transition:color .12s}
+.det-del-row:hover{color:var(--red)}
+.det-add-row{display:flex;gap:5px;align-items:center;padding:7px 13px;border-top:1px solid var(--s3);background:var(--s1)}
+.det-add-inp{background:var(--s2);border:1px solid var(--s3);color:var(--white);font-size:9px;padding:4px 7px;outline:none}
+.det-add-inp:focus{border-color:var(--purple)}
+.det-add-inp::placeholder{color:var(--s4)}
+.conf-badge{display:inline-block;font-size:7px;padding:1px 4px;border:1px solid rgba(191,95,255,.4);color:var(--purple);background:rgba(191,95,255,.08)}
+/* Annotated image viewer in detection tab */
+.det-annotated-wrap{position:relative;background:var(--s2);border:1px solid var(--s3);margin-bottom:10px;overflow:hidden}
+.det-annotated-wrap img{width:100%;display:block}
+.det-annotated-label{font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--s5);padding:4px 7px;background:var(--s1);border-top:1px solid var(--s3)}
+
+/* ── DETAIL PANEL ── */
+.detail-bg{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;z-index:100;backdrop-filter:blur(2px);align-items:center;justify-content:center}
+.detail-bg.open{display:flex}
+.detail{display:flex;background:var(--s1);border:1px solid var(--s3);width:94vw;max-width:1260px;max-height:93vh;overflow:hidden}
+.d-img-side{flex:1.4;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.d-img{max-width:100%;max-height:91vh;object-fit:contain;display:block}
+.d-panels{width:340px;min-width:340px;border-left:1px solid var(--s3);display:flex;flex-direction:column;overflow:hidden}
+.d-tabs{display:flex;border-bottom:1px solid var(--s3)}
+.d-tab{flex:1;padding:6px 2px;background:none;border:none;color:var(--s5);font-size:6px;letter-spacing:.09em;text-transform:uppercase;transition:all .15s;border-bottom:2px solid transparent}
+.d-tab.active{color:var(--white);border-bottom-color:var(--white)}
+.d-tab-content{flex:1;overflow-y:auto;padding:11px}
+.d-tab-content::-webkit-scrollbar{width:2px}
+.d-tab-content::-webkit-scrollbar-thumb{background:var(--s3)}
+.d-tab-pane{display:none}
+.d-tab-pane.active{display:block}
+.d-lbl{font-size:7px;letter-spacing:.16em;text-transform:uppercase;color:var(--s4);margin-bottom:4px;display:block}
+.d-section{margin-bottom:11px}
+.d-cats{display:flex;flex-wrap:wrap;gap:3px}
+.d-cat{font-size:7px;letter-spacing:.07em;text-transform:uppercase;border:1px solid var(--white);color:var(--white);padding:1px 5px}
+.d-cat.sec{border-color:var(--s3);color:var(--s5)}
+.d-desc{font-size:11px;line-height:1.7;color:var(--s7);font-weight:300}
+.d-tags{display:flex;flex-wrap:wrap;gap:3px}
+.d-tag{font-size:7px;padding:1px 5px;background:var(--s2);color:var(--s5);border:1px solid var(--s3)}
+.d-mtags{display:flex;flex-wrap:wrap;gap:3px}
+.d-mtag{font-size:7px;padding:1px 5px;background:rgba(77,159,255,.08);color:var(--blue);border:1px solid rgba(77,159,255,.25);display:flex;align-items:center;gap:3px}
+.d-mtag-x{cursor:pointer;opacity:.6;font-size:9px;line-height:1}
+.d-mtag-x:hover{opacity:1;color:var(--red)}
+.tag-row{display:flex;gap:4px;margin-top:5px}
+.tag-inp{flex:1;background:var(--s2);border:1px solid var(--s3);color:var(--white);font-size:9px;padding:3px 5px;outline:none}
+.tag-inp:focus{border-color:var(--blue)}
+.tag-inp::placeholder{color:var(--s4)}
+.btn-addtag{background:var(--blue);color:var(--white);border:none;padding:3px 8px;font-size:7px;letter-spacing:.08em;text-transform:uppercase}
+.d-notes{width:100%;background:var(--s2);border:1px solid var(--s3);color:var(--white);font-size:10px;padding:5px;resize:vertical;min-height:50px;outline:none;line-height:1.6}
+.d-notes:focus{border-color:var(--s5)}
+.btn-savenotes{align-self:flex-end;background:none;border:1px solid var(--s3);color:var(--s5);font-size:7px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;margin-top:3px;transition:all .12s}
+.btn-savenotes:hover{border-color:var(--white);color:var(--white)}
+.btn-savenotes.saved{border-color:rgba(61,220,132,.5);color:var(--green)}
+.d-extra{display:flex;gap:10px;flex-wrap:wrap}
+.d-ev{font-size:10px;color:var(--white);font-weight:500}
+.d-interest{display:flex;align-items:center;gap:6px}
+.d-dots{display:flex;gap:3px}
+.d-dot{width:7px;height:7px;border-radius:50%;background:var(--s3);cursor:pointer;border:1px solid var(--s3);transition:background .1s}
+.d-dot.on{background:var(--white);border-color:var(--white)}
+.d-intlbl{font-size:8px;color:var(--s5)}
+.d-fname{font-size:7px;color:var(--s4);word-break:break-all;line-height:1.5}
+.d-actions{display:flex;gap:4px;padding-top:7px;border-top:1px solid var(--s3);margin-top:3px}
+.btn-d{flex:1;background:none;border:1px solid var(--s3);color:var(--s5);font-size:6px;letter-spacing:.08em;text-transform:uppercase;padding:6px;transition:all .12s}
+.btn-d:hover{border-color:var(--white);color:var(--white)}
+.btn-d:disabled{opacity:.3;cursor:wait}
+.btn-d.del:hover{border-color:var(--red);color:var(--red)}
+.inv-item{padding:5px 0;border-bottom:1px solid var(--s3)}
+.inv-item:last-child{border-bottom:none}
+.inv-item-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.inv-item-name{font-size:9px;font-weight:500}
+.inv-item-meta{font-size:7px;color:var(--s5);display:flex;gap:6px;flex-wrap:wrap}
+.map-mini{border:1px solid var(--s3);margin-top:4px;position:relative;overflow:hidden;cursor:crosshair}
+.map-mini img{width:100%;display:block;opacity:.7}
+.map-mini-pin{position:absolute;pointer-events:none}
+.map-mini-hint{font-size:7px;color:var(--s5);margin-top:3px;letter-spacing:.06em}
+.map-mini-clear{font-size:7px;padding:2px 6px;background:none;border:1px solid var(--s3);color:var(--s5);cursor:pointer;margin-top:3px;transition:all .12s;letter-spacing:.07em;text-transform:uppercase}
+.map-mini-clear:hover{border-color:var(--red);color:var(--red)}
+
+/* ── PROGRESS ── */
+.prog-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;z-index:200;align-items:center;justify-content:center}
+.prog-bg.open{display:flex}
+.prog-box{background:var(--s1);border:1px solid var(--s3);padding:28px 38px;text-align:center;min-width:280px}
+.prog-t{font-size:7px;letter-spacing:.2em;text-transform:uppercase;color:var(--s5);margin-bottom:14px;display:block}
+.prog-nums{display:flex;align-items:baseline;justify-content:center;gap:3px;margin-bottom:10px}
+.prog-cur{font-size:30px;font-weight:700;line-height:1}
+.prog-sep,.prog-tot{font-size:15px;color:var(--s4)}
+.prog-bar-w{background:var(--s3);height:1px;margin-bottom:9px;overflow:hidden}
+.prog-bar{height:100%;background:var(--white);transition:width .3s}
+.prog-file{font-size:7px;color:var(--s4);max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.dragging::after{content:'DROP FILES HERE';position:fixed;inset:0;border:1px solid var(--white);background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;font-size:16px;letter-spacing:.3em;text-transform:uppercase;color:var(--white);z-index:300;pointer-events:none}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px}
+.empty-t{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--s4)}
+input[type=file]{display:none}
+
+/* ── PRINT / EXPORT ── */
+@media print{
+  @page{size:A0 landscape;margin:15mm}
+  .no-print{display:none!important}
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+<!-- ── SETUP DIALOG (API keys) ── -->
+<div class="setup-bg" id="setup-bg">
+  <div class="setup-box">
+    <div class="setup-title">MATERIA</div>
+    <div class="setup-sub">Configuration des clés API</div>
+    <div class="setup-err" id="setup-err">Clé invalide — réessaie</div>
+    <span class="setup-lbl">Clé API Mammouth (classification IA)</span>
+    <input class="setup-inp" id="setup-mammouth" type="text" placeholder="Colle ta clé Mammouth…">
+    <a class="setup-link" href="https://mammouth.ai/" target="_blank">→ Obtenir sur mammouth.ai</a>
+    <span class="setup-lbl">Clé API Roboflow (détection de composants)</span>
+    <input class="setup-inp" id="setup-roboflow" type="text" placeholder="Colle ta clé Roboflow…">
+    <a class="setup-link" href="https://app.roboflow.com/" target="_blank">→ Obtenir sur app.roboflow.com → Settings → API</a>
+    <button class="btn-setup" onclick="saveKeys()">Enregistrer et continuer</button>
+    <div class="setup-skip" onclick="skipSetup()">Configurer plus tard</div>
+  </div>
+</div>
+
+<!-- ── PROJECT SELECTOR ── -->
+<div class="proj-screen" id="proj-screen">
+  <div class="proj-header">
+    <div class="proj-app-name">MATERIA</div>
+    <div class="proj-app-sub">Atlas Photographique · Inventaire de Réemploi</div>
+  </div>
+  <div class="proj-grid" id="proj-grid"></div>
+  <div class="proj-create-form" id="proj-form">
+    <input class="proj-inp" id="proj-name-inp" placeholder="Nom du projet…" maxlength="60">
+    <input class="proj-inp" id="proj-desc-inp" placeholder="Description (optionnel)…" maxlength="200">
+    <div class="proj-create-btns">
+      <button class="btn-proj-create" onclick="createProject()">Créer le projet</button>
+      <button class="btn-proj-cancel" onclick="toggleCreateForm(false)">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MAIN APP ── -->
+<div class="app">
+<aside class="sidebar">
+  <div class="s-brand" onclick="backToProjects()">
+    <div class="s-back">← Projets</div>
+    <div class="s-app-name">MATERIA</div>
+    <div class="s-proj-name" id="s-proj-name">—</div>
+  </div>
+  <div class="s-stats">
+    <div class="s-stat"><span id="s-total">0</span><span>Photos</span></div>
+    <div class="s-stat"><span id="s-items">0</span><span>Éléments</span></div>
+    <div class="s-stat"><span id="s-dets">0</span><span>Détect.</span></div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchView('gallery')">Galerie</button>
+    <button class="nav-tab" onclick="switchView('inventory')">Inventaire</button>
+    <button class="nav-tab" onclick="switchView('map')">Plan</button>
+    <button class="nav-tab" onclick="switchView('classement')">Classement</button>
+    <button class="nav-tab" onclick="switchView('detection')">Détection</button>
+    <button class="nav-tab" onclick="switchView('geometrie')">Géométrie</button>
+    <button class="nav-tab" onclick="switchView('proprietes')">Propriétés</button>
+  </div>
+  <div class="cat-list" id="cat-list"></div>
+  <div class="s-foot">
+    <button class="btn-upload" id="btn-upload">+ Ajouter photos</button>
+    <button class="btn-sm" onclick="exportAll(event)">Imprimer tout</button>
+    <a class="btn-sm" id="btn-json" href="#">Exporter JSON</a>
+    <button class="btn-sm" onclick="openSetup()">⚙ Clés API</button>
+    <div class="fmt-note">JPG · PNG · NEF · CR2 · MOV</div>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="topbar-title">Tout l'atlas</span>
+    <input class="search" id="search" type="text" placeholder="Rechercher…">
+    <select class="sort-sel" id="sort">
+      <option value="date">Date</option>
+      <option value="interest">Intérêt</option>
+      <option value="category">Catégorie</option>
+    </select>
+    <div class="view-btns">
+      <button class="view-btn on" id="vg">⊞</button>
+      <button class="view-btn" id="vl">☰</button>
+    </div>
+  </div>
+
+  <div id="view-gallery" class="grid-wrap"><div class="photo-grid" id="grid"></div></div>
+
+  <div id="view-inventory" class="section-view" style="display:none">
+    <div class="section-header">
+      <div><div class="section-title">Inventaire Matériel</div><div class="section-sub" id="inv-sub-label"></div></div>
+      <div style="display:flex;gap:7px;align-items:center;flex-wrap:wrap">
+        <div style="font-size:8px;color:var(--s5)" id="g-nums"></div>
+        <button class="btn-section-export" onclick="exportSection('inventory', event)">Imprimer</button>
+      </div>
+    </div>
+    <div class="inv-actions">
+      <button class="btn-inv primary" onclick="toggleTaxEditor()">⚙ Taxonomie</button>
+    </div>
+    <div class="tax-editor" id="tax-editor">
+      <div id="tax-editor-content"></div>
+      <div style="margin-top:7px">
+        <input class="tax-edit-input" id="new-fam-input" placeholder="Nouvelle famille…" style="width:170px">
+        <button class="btn-tax add" onclick="addFamily()" style="margin-left:4px">+ Famille</button>
+      </div>
+    </div>
+    <div id="inv-table-wrap"></div>
+  </div>
+
+  <div id="view-map" class="map-view" style="display:none">
+    <div class="map-toolbar">
+      <!-- Mode toggle: 2D / 3D -->
+      <div style="display:flex;gap:1px;margin-right:6px">
+        <button class="map-mode-btn active" id="map-dim-2d" onclick="setMapDimension('2d')" title="Plan image 2D">2D</button>
+        <button class="map-mode-btn" id="map-dim-3d" onclick="setMapDimension('3d')" title="Modèle 3D GLB">3D</button>
+      </div>
+      <button class="map-mode-btn active" id="mode-place" onclick="setMapMode('place')">📍 Placer</button>
+      <button class="map-mode-btn" id="mode-view" onclick="setMapMode('view')">👁 Voir</button>
+      <span class="map-hint" id="map-hint">Ouvre une photo puis clique sur le plan pour la localiser</span>
+      <!-- 2D: change image -->
+      <label class="btn-sm" id="btn-change-2d" style="width:auto;padding:4px 8px;cursor:pointer">Changer plan
+        <input type="file" accept="image/*" onchange="uploadMap(this)">
+      </label>
+      <!-- 3D: load GLB -->
+      <label class="btn-sm" id="btn-change-3d" style="width:auto;padding:4px 8px;cursor:pointer;display:none">Charger GLB / PLY
+        <input type="file" accept=".glb,.gltf,.ply" onchange="load3DModel(this)">
+      </label>
+      <button class="btn-section-export" onclick="exportSection('map', event)">Imprimer</button>
+    </div>
+    <!-- 2D MAP -->
+    <div class="map-container view-mode" id="map-container">
+      <img class="map-img" id="map-img" src="/assets/site_drone.png" alt="" draggable="false">
+      <div class="map-pins-layer" id="map-pins"></div>
+      <div class="map-legend">
+        <div><span class="legend-dot" style="background:var(--red)"></span>Photo</div>
+        <div><span class="legend-dot" style="background:rgba(255,59,48,.2);border:2px solid rgba(255,59,48,.7);border-radius:50%"></span>Cluster</div>
+      </div>
+    </div>
+    <!-- 3D MAP -->
+    <div id="map-3d-container" style="display:none;flex:1;position:relative;background:#111;overflow:hidden">
+      <canvas id="map-3d-canvas" style="width:100%;height:100%;display:block;outline:none"></canvas>
+      <div id="map-3d-pins" style="position:absolute;inset:0;pointer-events:none"></div>
+      <div id="map-3d-hint" style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--s5);background:rgba(0,0,0,.6);padding:4px 10px;pointer-events:none">
+        Clic gauche: placer photo · Clic droit/drag: orbite · Molette: zoom
+      </div>
+      <div id="map-3d-empty" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px">
+        <span style="font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--s4)">Aucun modèle 3D chargé</span>
+        <span style="font-size:8px;color:var(--s5)">Utilise le bouton "Charger GLB" ci-dessus</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-classement" class="section-view" style="display:none">
+    <div class="section-header">
+      <div><div class="section-title">Classement Typologique</div><div class="section-sub">Auto + assignations manuelles</div></div>
+      <button class="btn-section-export" onclick="exportSection('classement', event)">Imprimer</button>
+    </div>
+    <div id="class-content"></div>
+  </div>
+
+  <div id="view-geometrie" class="section-view" style="display:none">
+    <div class="section-header">
+      <div><div class="section-title">Classification Géométrique</div><div class="section-sub">Éléments regroupés par forme : linéaire · plan · volumétrique · ponctuel · complexe</div></div>
+      <button class="btn-section-export" onclick="exportSection('geometrie', event)">Imprimer</button>
+    </div>
+    <div id="geom-content"></div>
+  </div>
+
+  <div id="view-proprietes" class="section-view" style="display:none">
+    <div class="section-header">
+      <div><div class="section-title">Propriétés physico-chimiques</div><div class="section-sub">Caractérisation matière pour mise en œuvre — densité · résistances · conductivité · feu · réutilisabilité</div></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn-det" onclick="estimatePropertiesAll()" id="btn-est-props">⚡ Estimer toutes</button>
+        <button class="btn-section-export" onclick="exportSection('proprietes', event)">Imprimer</button>
+      </div>
+    </div>
+    <div id="prop-content"></div>
+  </div>
+
+  <div id="view-detection" style="display:none;flex-direction:column;overflow:hidden;flex:1">
+    <div class="det-toolbar">
+      <input class="det-input" id="det-keywords" placeholder="Mots-clés à détecter : brick, column, steel beam, window…" style="flex:1;min-width:200px">
+      <button class="btn-det" id="btn-detect-all" onclick="detectAll()">⚡ SAM3 — Analyser tout le projet</button>
+      <button class="btn-det-outline" onclick="exportSection('detection', event)">Imprimer</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:14px" id="det-content"></div>
+  </div>
+</main>
+</div>
+
+<!-- CLUSTER MODAL -->
+<div class="cluster-modal-bg" id="cluster-modal-bg" onclick="closeClusterModal(event)">
+  <div class="cluster-modal">
+    <div class="cluster-modal-head">
+      <div>
+        <div class="cluster-modal-title" id="cluster-modal-title">Zone</div>
+        <div class="cluster-modal-count" id="cluster-modal-count"></div>
+      </div>
+      <button class="btn-cluster-close" onclick="closeClusterModalDirect()">✕</button>
+    </div>
+    <div class="cluster-modal-grid" id="cluster-modal-grid"></div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-bg" id="detail-bg">
+<div class="detail">
+  <div class="d-img-side"><img class="d-img" id="d-img" src="" alt=""></div>
+  <div class="d-panels">
+    <div class="d-tabs">
+      <button class="d-tab active" onclick="switchDetailTab('info')">Info</button>
+      <button class="d-tab" onclick="switchDetailTab('inventory')">Inventaire</button>
+      <button class="d-tab" onclick="switchDetailTab('location')">Plan</button>
+      <button class="d-tab" onclick="switchDetailTab('detection')">Détection</button>
+    </div>
+    <div class="d-tab-content">
+      <div class="d-tab-pane active" id="dtab-info">
+        <div class="d-section"><span class="d-lbl">Catégories IA</span><div class="d-cats" id="d-cats"></div></div>
+        <div class="d-section"><span class="d-lbl">Description</span><div class="d-desc" id="d-desc"></div></div>
+        <div class="d-section"><span class="d-lbl">Tags IA</span><div class="d-tags" id="d-tags"></div></div>
+        <div class="d-section">
+          <span class="d-lbl">Étiquettes manuelles</span>
+          <div class="d-mtags" id="d-mtags"></div>
+          <div class="tag-row">
+            <input class="tag-inp" id="tag-inp" placeholder="Nouvelle étiquette…" maxlength="60">
+            <button class="btn-addtag" onclick="addTag()">+</button>
+          </div>
+        </div>
+        <div class="d-section">
+          <span class="d-lbl">Notes</span>
+          <textarea class="d-notes" id="d-notes" placeholder="Observations, contexte…"></textarea>
+          <button class="btn-savenotes" id="btn-savenotes" onclick="saveNotes()">Enregistrer</button>
+        </div>
+        <div class="d-section d-extra" id="d-extra"></div>
+        <div class="d-section">
+          <span class="d-lbl">Intérêt patrimonial</span>
+          <div class="d-interest"><div class="d-dots" id="d-dots"></div><span class="d-intlbl" id="d-intlbl"></span></div>
+        </div>
+        <div class="d-section"><span class="d-lbl">Fichier</span><div class="d-fname" id="d-fname"></div></div>
+        <div class="d-actions">
+          <button class="btn-d" id="btn-reclassify" onclick="reclassify()">↺ Reclassifier</button>
+          <button class="btn-d del" onclick="deletePhoto()">Supprimer</button>
+          <button class="btn-d" onclick="closeDetail()">Fermer</button>
+        </div>
+      </div>
+      <div class="d-tab-pane" id="dtab-inventory"><div id="d-inv-list"></div></div>
+      <div class="d-tab-pane" id="dtab-location">
+        <span class="d-lbl">Cliquer sur le plan pour localiser</span>
+        <div class="map-mini" id="map-mini" onclick="placeFromDetail(event)">
+          <img src="/assets/site_drone.png" id="map-mini-img" draggable="false" alt="">
+          <div id="map-mini-pin"></div>
+        </div>
+        <div class="map-mini-hint" id="map-mini-hint">Aucune localisation</div>
+        <button class="map-mini-clear" onclick="clearLocation()">✕ Supprimer la localisation</button>
+      </div>
+      <div class="d-tab-pane" id="dtab-detection">
+        <div style="margin-bottom:8px">
+          <span class="d-lbl">Mots-clés SAM3 (séparés par ,)</span>
+          <input class="det-input" id="d-keywords" placeholder="ex: brick, column, steel beam, rust, window" style="width:100%;margin-bottom:6px">
+          <div style="font-size:7px;color:var(--s5);margin-bottom:6px">SAM3 détecte et détourne précisément les objets nommés</div>
+          <button class="btn-det" style="width:100%;padding:7px" id="btn-detect-one" onclick="detectOne()">⚡ SAM3 — Analyser cette photo</button>
+        </div>
+        <div id="d-det-results"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="prog-bg" id="prog-bg">
+  <div class="prog-box">
+    <span class="prog-t" id="prog-label">Analyse IA en cours</span>
+    <div class="prog-nums"><span class="prog-cur" id="pc">0</span><span class="prog-sep">/</span><span class="prog-tot" id="pt">0</span></div>
+    <div class="prog-bar-w"><div class="prog-bar" id="pb" style="width:0%"></div></div>
+    <div class="prog-file" id="pf">—</div>
+  </div>
+</div>
+<input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.webp,.nef,.cr2,.arw,.dng,.mov,.mp4">
+
+<script>
+const CATS_STD={escaliers:'Escaliers',portes:'Portes',debris:'Débris',graffitis:'Graffitis',metal:'Métal',machines:'Machines',rouille:'Rouille',fenetres:'Fenêtres',beton:'Béton',vegetation:'Végétation',sol:'Sols',lumiere:'Lumière',plafond:'Plafonds',tubes:'Tuyaux',autre:'Autre'};
+const INT_LABELS=['','Banal','Ordinaire','Intéressant','Remarquable','Exceptionnel'];
+const COND_CLASS={intact:'cond-intact',reusable:'cond-reusable',degraded:'cond-degraded','non-reusable':'cond-non-reusable'};
+const CLASS_TYPES=[
+  {id:'brique',label:'Briques',keywords:['brick','hollow concrete block','solid brick','rubble stone','masonry']},
+  {id:'metal_piece',label:'Pièces Métalliques',keywords:['steel beam','steel column','steel truss','steel purlin','cast iron','metal deck','corrugated metal']},
+  {id:'machine',label:'Machines & Équipements',keywords:['rotary kiln','cement mill','ball mill','crusher','hammer mill','bucket elevator','belt conveyor','screw conveyor','vibrating screen','cyclone','precipitator','preheater','pump','compressor']},
+  {id:'tuyaux',label:'Tuyaux & Câblages',keywords:['pipe','duct','cable','electrical panel','transformer','valve']},
+  {id:'mur',label:'Murs & Parois',keywords:['wall','plaster','cladding','partition','painted concrete wall','brick wall','concrete block wall','stone wall']},
+  {id:'poutre',label:'Poutres & Charpentes',keywords:['beam','truss','purlin','lattice girder','roof structure','timber roof']},
+  {id:'colonne',label:'Colonnes & Poteaux',keywords:['column','concrete column','cast iron column','steel column']},
+  {id:'silo',label:'Silos & Stockage',keywords:['silo','tank','hopper','bin','bunker']},
+  {id:'escalier',label:'Escaliers & Circulations',keywords:['stair','ramp','catwalk','ladder','corridor']},
+  {id:'sol',label:'Sols & Revêtements',keywords:['floor','tile','concrete floor','brick floor']},
+  {id:'vegetation',label:'Végétation',keywords:['tree','shrub','ivy','moss','lichen','grass','fern','plant','vegetation']},
+  {id:'degradation',label:'Dégradations & Textures',keywords:['crack','spalling','rust','corrosion','graffiti','tag','fissure','efflorescence','carbonation']},
+];
+
+let photos=[],currentCat='all',viewMode='grid',currentDetail=null;
+let currentView='gallery',mapMode='place',taxonomy=[],classementOverrides={},geometrieOverrides={},elementProperties={};
+let propViewMode='classement';
+let totalInvItems=0,currentProject=null,mapData={photos:[],clusters:[]};
+
+// ── SETUP ──────────────────────────────────────────────────────────────────────
+function openSetup(){document.getElementById('setup-bg').classList.add('open');}
+function skipSetup(){document.getElementById('setup-bg').classList.remove('open');}
+async function saveKeys(){
+  const mammouth=document.getElementById('setup-mammouth').value.trim();
+  const roboflow=document.getElementById('setup-roboflow').value.trim();
+  if(!mammouth&&!roboflow)return skipSetup();
+  try{
+    await fetch('/api/set-key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:mammouth,roboflow_key:roboflow})});
+    skipSetup();
+  }catch(e){document.getElementById('setup-err').style.display='block';}
+}
+async function checkKeys(){
+  try{
+    const s=await fetch('/api/keys-status').then(r=>r.json());
+    if(!s.mammouth) openSetup();
+  }catch{}
+}
+
+// ── PROJECTS ───────────────────────────────────────────────────────────────────
+async function loadProjectList(){
+  const projects=await fetch('/api/projects').then(r=>r.json());
+  const grid=document.getElementById('proj-grid');
+  grid.innerHTML='';
+  projects.forEach(p=>{
+    const card=document.createElement('div');card.className='proj-card';
+    card.innerHTML=`<div class="proj-card-name">${p.name}</div><div class="proj-card-desc">${p.description||'Aucune description'}</div><div class="proj-card-date">${new Date(p.created_at).toLocaleDateString('fr-FR')}</div><button class="proj-card-del" onclick="deleteProject(event,'${p.id}')">✕</button>`;
+    card.onclick=()=>openProject(p);grid.appendChild(card);
+  });
+  const nc=document.createElement('div');nc.className='proj-new';
+  nc.innerHTML=`<div class="proj-new-icon">+</div><div class="proj-new-label">Nouveau projet</div>`;
+  nc.onclick=()=>toggleCreateForm(true);grid.appendChild(nc);
+}
+function toggleCreateForm(show){document.getElementById('proj-form').classList.toggle('open',show);if(show)document.getElementById('proj-name-inp').focus();}
+async function createProject(){
+  const name=document.getElementById('proj-name-inp').value.trim();if(!name)return;
+  const desc=document.getElementById('proj-desc-inp').value.trim();
+  const p=await fetch('/api/projects',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,description:desc})}).then(r=>r.json());
+  document.getElementById('proj-name-inp').value='';document.getElementById('proj-desc-inp').value='';
+  toggleCreateForm(false);openProject(p);
+}
+async function deleteProject(e,id){
+  e.stopPropagation();if(!confirm('Supprimer ce projet ?'))return;
+  await fetch(`/api/projects/${id}`,{method:'DELETE'});loadProjectList();
+}
+function openProject(p){
+  currentProject=p;
+  document.getElementById('proj-screen').classList.add('hidden');
+  document.getElementById('s-proj-name').textContent=p.name;
+  document.getElementById('btn-json').href=`/api/${p.id}/export`;
+  init();
+}
+function backToProjects(){
+  currentProject=null;photos=[];taxonomy=[];classementOverrides={};geometrieOverrides={};elementProperties={};vectorDrawings={};
+  document.getElementById('proj-screen').classList.remove('hidden');
+  loadProjectList();
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────────
+async function init(){
+  await Promise.all([loadPhotos(),loadStats(),loadTaxonomy(),loadOverrides()]);
+  buildCatList();
+}
+async function loadOverrides(){
+  try{
+    const data = await fetch(`/api/${currentProject.id}/overrides`).then(r=>r.json());
+    classementOverrides = data.classement_overrides || {};
+    geometrieOverrides = data.geometrie_overrides || {};
+    elementProperties = data.element_properties || {};
+    vectorDrawings = data.vector_drawings || {};
+  }catch(e){console.warn('overrides load',e);}
+}
+function buildCatList(){
+  const list=document.getElementById('cat-list');
+  list.innerHTML=`<div class="cat-item active" data-cat="all" onclick="selectCat('all')"><span class="cat-name">Tout</span><span class="cat-n" id="cn-all">0</span></div>`;
+  Object.entries(CATS_STD).forEach(([id,label])=>{
+    const d=document.createElement('div');d.className='cat-item';d.dataset.cat=id;
+    d.innerHTML=`<span class="cat-name">${label}</span><span class="cat-n" id="cn-${id}">0</span>`;
+    d.onclick=()=>selectCat(id);list.appendChild(d);
+  });
+}
+function selectCat(id){
+  currentCat=id;
+  document.querySelectorAll('.cat-item').forEach(el=>el.classList.toggle('active',el.dataset.cat===id));
+  document.getElementById('topbar-title').textContent=id==='all'?"Tout l'atlas":(CATS_STD[id]||id);
+  loadPhotos();
+}
+async function loadStats(){
+  const pid=currentProject.id;
+  const s=await fetch(`/api/${pid}/stats`).then(r=>r.json());
+  document.getElementById('s-total').textContent=s.total;
+  document.getElementById('cn-all').textContent=s.total;
+  Object.entries(s.byCategory).forEach(([id,n])=>{const el=document.getElementById(`cn-${id}`);if(el)el.textContent=n;});
+}
+async function loadPhotos(){
+  const pid=currentProject.id;
+  const p=new URLSearchParams({category:currentCat,search:document.getElementById('search').value,sort:document.getElementById('sort').value});
+  photos=await fetch(`/api/${pid}/photos?${p}`).then(r=>r.json());
+  renderGrid();
+}
+async function loadTaxonomy(){taxonomy=await fetch(`/api/${currentProject.id}/taxonomy`).then(r=>r.json());}
+
+// ── VIEW SWITCH ────────────────────────────────────────────────────────────────
+function switchView(v){
+  currentView=v;
+  ['gallery','inventory','map','classement','detection','geometrie','proprietes'].forEach(name=>{
+    const el=document.getElementById(`view-${name}`);
+    if(el)el.style.display=name===v?(name==='gallery'?'block':'flex'):'none';
+  });
+  document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',['gallery','inventory','map','classement','detection','geometrie','proprietes'][i]===v));
+  document.querySelector('.topbar').style.display=v==='gallery'?'flex':'none';
+  if(v==='inventory')loadInventory();
+  if(v==='map')loadMap();
+  if(v==='classement')loadClassement();
+  if(v==='detection')loadDetection();
+  if(v==='geometrie')loadGeometrie();
+  if(v==='proprietes')loadProprietes();
+}
+
+// ── GALLERY ────────────────────────────────────────────────────────────────────
+function renderGrid(){
+  const g=document.getElementById('grid');
+  g.className='photo-grid'+(viewMode==='list'?' list':'');
+  if(!photos.length){g.innerHTML=`<div class="empty" style="grid-column:1/-1;height:60vh"><span class="empty-t">Aucun fichier</span></div>`;return;}
+  g.innerHTML=photos.map(p=>{
+    const cats=(p.categories||[]).slice(0,2).map(c=>`<span class="card-cat">${CATS_STD[c]||c}</span>`).join('');
+    const dots=Array.from({length:5},(_,i)=>`<span class="dot ${i<(p.interest||0)?'on':''}"></span>`).join('');
+    const src=p.preview||(p.file_type==='image'?p.path:'')||p.thumb||'';
+    const img=src?`<img class="card-img" src="${src}" loading="lazy" alt="">`:`<div class="card-img" style="background:var(--s2);display:flex;align-items:center;justify-content:center;color:var(--s4);font-size:9px">${(p.ext||'').replace('.','').toUpperCase()||'?'}</div>`;
+    const ftBadge=p.file_type!=='image'?`<span class="file-badge ${p.file_type}">${(p.ext||'').replace('.','').toUpperCase()}</span>`:'';
+    const locBadge=p.location?`<span class="loc-badge"></span>`:'';
+    const invBadge=p.inventory?.length?`<span class="card-inv-badge">${p.inventory.length}i</span>`:'';
+    const detBadge=p.detections?.length?`<span class="card-det-badge">${p.detections.length}d</span>`:'';
+    return `<div class="card" data-id="${p.id}" onclick="openDetail('${p.id}')">
+      <div class="card-thumb">${img}${ftBadge}${locBadge}
+        <div class="card-ov"><div class="card-cats">${cats}${invBadge}${detBadge}</div></div>
+      </div>
+      <div class="card-meta">
+        <div class="card-fname">${p.original_name}</div>
+        <div class="card-row"><div class="card-dots">${dots}</div>${p.location?'<span class="card-loc-dot"></span>':''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── DETAIL ─────────────────────────────────────────────────────────────────────
+function openDetail(id){
+  const p=photos.find(x=>x.id===id)||currentDetail;if(!p)return;
+  currentDetail=p;
+  // Always show original image (no segmentation overlay here — only in Detection tab)
+  document.getElementById('d-img').src=p.file_type==='video'?(p.thumb||''):(p.preview||p.path||'');
+  document.getElementById('d-cats').innerHTML=(p.categories||[]).map((c,i)=>`<span class="d-cat ${i>0?'sec':''}">${CATS_STD[c]||c}</span>`).join('');
+  document.getElementById('d-desc').textContent=p.description||'—';
+  document.getElementById('d-tags').innerHTML=(p.tags||[]).map(t=>`<span class="d-tag">${t}</span>`).join('');
+  renderDetailMtags(p);
+  document.getElementById('d-notes').value=p.notes||'';
+  const sb=document.getElementById('btn-savenotes');sb.textContent='Enregistrer';sb.className='btn-savenotes';
+  const ex=document.getElementById('d-extra');ex.innerHTML='';
+  if(p.materiaux?.length)ex.innerHTML+=`<div><span class="d-lbl">Matériaux</span><div class="d-ev">${p.materiaux.join(', ')}</div></div>`;
+  if(p.etat)ex.innerHTML+=`<div><span class="d-lbl">État</span><div class="d-ev">${p.etat}</div></div>`;
+  document.getElementById('d-dots').innerHTML=Array.from({length:5},(_,i)=>`<span class="d-dot ${i<(p.interest||0)?'on':''}" onclick="setInterest(${i+1})"></span>`).join('');
+  document.getElementById('d-intlbl').textContent=INT_LABELS[p.interest||0]||'';
+  document.getElementById('d-fname').textContent=`${p.original_name} · ${fmtSize(p.size)}`;
+  renderDetailInventory(p);renderLocationTab(p);renderDetailDetection(p);
+  if(p.detection_model)document.getElementById('d-model-id').value=p.detection_model;
+  if(p.detection_keywords?.length)document.getElementById('d-keywords').value=p.detection_keywords.join(', ');
+  switchDetailTab('info');
+  document.getElementById('detail-bg').classList.add('open');
+}
+function renderDetailMtags(p){document.getElementById('d-mtags').innerHTML=(p.manual_tags||[]).map(t=>`<span class="d-mtag">${t}<span class="d-mtag-x" onclick="removeTag('${encodeURIComponent(t)}')">✕</span></span>`).join('');}
+
+function renderDetailInventory(p){
+  const inv=p.inventory||[],famLabels={};
+  taxonomy.forEach(f=>{famLabels[f.id]=f.label;f.subs.forEach(s=>{famLabels[s.id]=s.label;});});
+  const grouped={};
+  inv.forEach((item,idx)=>{const key=item.family_id||'autre';if(!grouped[key])grouped[key]=[];grouped[key].push({...item,_idx:idx});});
+  const rowsHtml=inv.length?Object.entries(grouped).map(([fam,items])=>`
+    <div style="margin-bottom:8px">
+      <div style="font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--s4);margin-bottom:3px">${famLabels[fam]||fam}</div>
+      ${items.map(item=>{
+        const mode = item.mode === 'continuous' ? 'continuous' : 'discrete';
+        let potentialQty = null;
+        if (mode === 'continuous' && item.surface_m2 && item.dim_l_cm && (item.dim_h_cm || item.dim_w_cm)) {
+          const faceArea_cm2 = item.dim_l_cm * (item.dim_h_cm || item.dim_w_cm);
+          if (faceArea_cm2 > 0) potentialQty = Math.round((item.surface_m2 * 10000) / faceArea_cm2);
+        }
+        const volM3 = (item.dim_l_cm && item.dim_w_cm && item.dim_h_cm)
+          ? ((item.dim_l_cm * item.dim_w_cm * item.dim_h_cm) / 1e6) : null;
+        return `<div class="inv-item">
+        <div class="inv-item-header">
+          <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;min-width:0;flex:1">
+            <span class="inv-item-name">${item.element}</span>
+            <input class="inv-subtype-input" type="text" placeholder="sous-type / profil…" value="${item.element_subtype||''}" onchange="updateInvField(${item._idx},'element_subtype',this.value)" title="Profil exact : IPE200, HEA160, C25/30, S235…">
+          </div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <input class="inv-qty-input" type="number" min="0" value="${item.quantity}" onchange="updateInvQty(${item._idx},this.value)" title="Quantité visible">
+            <span style="font-size:8px;color:var(--s5)">${item.unit||'u.'}</span>
+            <button class="btn-inv-del" onclick="deleteInvItem(${item._idx})">✕</button>
+          </div>
+        </div>
+        <div class="inv-item-meta">
+          <span class="${'cond-badge '+(COND_CLASS[item.condition]||'cond-degraded')}">${item.condition}</span>
+          <span class="mode-badge mode-${mode}" onclick="toggleInvMode(${item._idx})" title="Cliquer pour basculer">${mode === 'continuous' ? '◫ continu' : '▢ discret'}</span>
+          ${item.confidence?`<span>conf. ${Math.round(item.confidence*100)}%</span>`:''}
+        </div>
+        <div class="inv-dims">
+          <span class="dim-label">L</span><input class="dim-input" type="number" step="any" placeholder="—" value="${item.dim_l_cm||''}" onchange="updateInvDim(${item._idx},'dim_l_cm',this.value)" title="Longueur unité (cm)"><span class="dim-unit">cm</span>
+          <span class="dim-x">×</span>
+          <span class="dim-label">l</span><input class="dim-input" type="number" step="any" placeholder="—" value="${item.dim_w_cm||''}" onchange="updateInvDim(${item._idx},'dim_w_cm',this.value)"><span class="dim-unit">cm</span>
+          <span class="dim-x">×</span>
+          <span class="dim-label">H</span><input class="dim-input" type="number" step="any" placeholder="—" value="${item.dim_h_cm||''}" onchange="updateInvDim(${item._idx},'dim_h_cm',this.value)"><span class="dim-unit">cm</span>
+          ${volM3 ? `<span class="dim-derived">${(volM3*1000).toFixed(1)} L/u.</span>` : ''}
+        </div>
+        ${mode === 'continuous' ? `<div class="inv-cont">
+          <span class="dim-label">Surface</span>
+          <input class="dim-input" type="number" step="any" placeholder="—" value="${item.surface_m2||''}" onchange="updateInvDim(${item._idx},'surface_m2',this.value)" style="width:60px"><span class="dim-unit">m²</span>
+          ${potentialQty !== null ? `<span class="dim-derived" style="color:var(--blue)">≈ ${potentialQty} u. potentielles</span>` : ''}
+        </div>` : ''}
+      </div>`;
+      }).join('')}
+    </div>`).join(''):`<div style="color:var(--s5);font-size:9px;padding:5px 0">Aucun élément inventorié</div>`;
+  document.getElementById('d-inv-list').innerHTML=rowsHtml+`
+    <div class="inv-add-row">
+      <input class="inv-add-input" id="inv-add-elem" placeholder="Élément…" style="flex:2;min-width:80px">
+      <input class="inv-add-input" id="inv-add-qty" type="number" min="1" value="1" style="width:44px">
+      <input class="inv-add-input" id="inv-add-fam" placeholder="Famille" style="flex:1;min-width:60px">
+      <button class="btn-inv-add" onclick="addInvItem()">+ Add</button>
+    </div>`;
+}
+
+function renderDetailDetection(p){
+  const entries=p.detection_entries||[];
+  const dets=p.detections||[];
+  let html='';
+
+  if(!entries.length && !p.detection_annotated_b64){
+    html=`<div style="color:var(--s5);font-size:9px;padding:5px 0">Aucune détection — entre des mots-clés et lance SAM3</div>`;
+  } else {
+    // Show all keyword entries
+    const toShow = entries.length ? entries : (p.detection_annotated_b64 ? [{keywords:p.detection_keywords||[], annotated_b64:p.detection_annotated_b64, detections:dets}] : []);
+    toShow.forEach((entry,ei)=>{
+      const kw=(entry.keywords||[]).join(', ')||'Détection';
+      const entryDets=entry.detections||[];
+      html+=`<div style="border:1px solid var(--s3);margin-bottom:8px;overflow:hidden">
+        <div style="background:var(--s2);padding:4px 8px;font-size:7px;letter-spacing:.1em;text-transform:uppercase;color:var(--purple);display:flex;justify-content:space-between;align-items:center">
+          <span>🎯 ${kw}</span>
+          <span style="color:var(--s5)">${entryDets.reduce((s,d)=>s+d.count,0)} obj.</span>
+        </div>
+        <img src="data:image/jpeg;base64,${entry.annotated_b64}" style="width:100%;display:block">
+        <div style="padding:5px 8px">
+          ${entryDets.map((d,di)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--s3)">
+            <span style="font-size:9px;font-weight:500">${d.label}</span>
+            <div style="display:flex;align-items:center;gap:4px">
+              <input class="det-count-input" type="number" min="0" value="${d.count}" onchange="updateDetCountEntry(${ei},${di},this.value)">
+              <span class="conf-badge">${d.confidence}%</span>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    });
+  }
+  document.getElementById('d-det-results').innerHTML=html;
+}
+
+async function updateDetCountEntry(entryIdx, detIdx, val){
+  if(!currentDetail) return;
+  const entries=[...(currentDetail.detection_entries||[])];
+  if(!entries[entryIdx]) return;
+  entries[entryIdx].detections[detIdx].count = Math.max(0,parseInt(val)||0);
+  const updated=await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({detection_entries:entries})}).then(r=>r.json());
+  syncPhoto(updated);
+}
+
+function renderLocationTab(p){
+  const pin=document.getElementById('map-mini-pin'),hint=document.getElementById('map-mini-hint');
+  pin.innerHTML='';pin.style.cssText='';
+  const has2D = !!p.location;
+  const has3D = !!p.location_3d;
+  if(has2D){
+    pin.style.cssText=`position:absolute;left:${p.location.x*100}%;top:${p.location.y*100}%;transform:translate(-50%,-50%);pointer-events:none;z-index:10`;
+    pin.innerHTML=`<div style="width:14px;height:14px;border-radius:50%;background:#3ddc84;border:2px solid #fff;box-shadow:0 0 8px rgba(61,220,132,.9)"></div>`;
+  }
+  const parts=[];
+  if(has2D) parts.push(`2D ✓ cluster: ${p.cluster_id||'aucun'}`);
+  if(has3D) parts.push('3D ✓');
+  hint.textContent = parts.length ? parts.join(' · ') : 'Cliquer sur le plan (2D ou 3D) pour localiser';
+}
+
+async function placeFromDetail(e){
+  if(!currentDetail)return;
+  const rect=e.currentTarget.getBoundingClientRect();
+  // Account for object-fit:contain letterboxing in mini map
+  const img=document.getElementById('map-mini-img');
+  const iw=img.naturalWidth||img.width||1, ih=img.naturalHeight||img.height||1;
+  const scale=Math.min(rect.width/iw,rect.height/ih);
+  const rw=iw*scale,rh=ih*scale;
+  const ox=(rect.width-rw)/2, oy=(rect.height-rh)/2;
+  const cx=e.clientX-rect.left, cy=e.clientY-rect.top;
+  const x=Math.max(0,Math.min(1,(cx-ox)/rw)), y=Math.max(0,Math.min(1,(cy-oy)/rh));
+  currentDetail.location={x,y};renderLocationTab(currentDetail);
+  const updated=await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}/location`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({x,y})}).then(r=>r.json());
+  syncPhoto(updated);renderLocationTab(updated);renderGrid();loadMap();
+}
+async function clearLocation(){
+  if(!currentDetail)return;
+  const updated=await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:null,cluster_id:null})}).then(r=>r.json());
+  syncPhoto(updated);renderLocationTab(updated);renderGrid();loadMap();
+}
+function switchDetailTab(tab){
+  document.querySelectorAll('.d-tab').forEach((t,i)=>t.classList.toggle('active',['info','inventory','location','detection'][i]===tab));
+  document.querySelectorAll('.d-tab-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById(`dtab-${tab}`).classList.add('active');
+}
+async function setInterest(v){
+  if(!currentDetail)return;
+  const updated=await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({interest:v})}).then(r=>r.json());
+  syncPhoto(updated);openDetail(currentDetail.id);renderGrid();
+}
+async function addTag(){
+  const inp=document.getElementById('tag-inp'),tag=inp.value.trim();if(!tag||!currentDetail)return;
+  const updated=await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}/tags`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tag})}).then(r=>r.json());
+  inp.value='';syncPhoto(updated);renderDetailMtags(updated);renderGrid();
+}
+async function removeTag(enc){
+  if(!currentDetail)return;
+  const updated=await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}/tags/${enc}`,{method:'DELETE'}).then(r=>r.json());
+  syncPhoto(updated);renderDetailMtags(updated);renderGrid();
+}
+async function saveNotes(){
+  if(!currentDetail)return;
+  const notes=document.getElementById('d-notes').value;
+  const updated=await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({notes})}).then(r=>r.json());
+  syncPhoto(updated);const btn=document.getElementById('btn-savenotes');btn.textContent='✓ Enregistré';btn.classList.add('saved');
+  setTimeout(()=>{btn.textContent='Enregistrer';btn.classList.remove('saved');},2000);
+}
+async function reclassify(){
+  if(!currentDetail)return;
+  const btn=document.getElementById('btn-reclassify');btn.disabled=true;btn.textContent='↺ En cours…';
+  try{const updated=await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}/reclassify`,{method:'POST'}).then(r=>r.json());syncPhoto(updated);openDetail(updated.id);renderGrid();loadStats();}
+  catch(e){alert('Erreur: '+e.message);}
+  btn.disabled=false;btn.textContent='↺ Reclassifier';
+}
+async function deletePhoto(){
+  if(!currentDetail||!confirm('Supprimer ce fichier ?'))return;
+  await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}`,{method:'DELETE'});
+  closeDetail();loadPhotos();loadStats();
+}
+function closeDetail(){document.getElementById('detail-bg').classList.remove('open');currentDetail=null;}
+document.getElementById('detail-bg').onclick=e=>{if(e.target===document.getElementById('detail-bg'))closeDetail();};
+document.getElementById('tag-inp').onkeydown=e=>{if(e.key==='Enter')addTag();};
+function syncPhoto(updated){const idx=photos.findIndex(p=>p.id===updated.id);if(idx>=0)photos[idx]=updated;if(currentDetail?.id===updated.id)currentDetail=updated;}
+
+// ── INVENTORY EDITS ────────────────────────────────────────────────────────────
+async function updateInvQty(idx,val){
+  if(!currentDetail)return;
+  const inv=[...(currentDetail.inventory||[])];inv[idx]={...inv[idx],quantity:Math.max(0,parseInt(val)||0)};
+  const updated=await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({inventory:inv})}).then(r=>r.json());
+  syncPhoto(updated);
+}
+async function updateInvDim(idx, field, val){
+  if(!currentDetail) return;
+  const inv=[...(currentDetail.inventory||[])];
+  const v = val === '' || val == null ? null : parseFloat(val);
+  inv[idx] = {...inv[idx], [field]: (v !== null && !isNaN(v) && v >= 0) ? v : null};
+  const updated = await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({inventory: inv})}).then(r=>r.json());
+  syncPhoto(updated); renderDetailInventory(updated);
+}
+async function updateInvField(idx, field, val){
+  if(!currentDetail) return;
+  const inv=[...(currentDetail.inventory||[])];
+  inv[idx] = {...inv[idx], [field]: val === '' ? null : val};
+  const updated = await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({inventory: inv})}).then(r=>r.json());
+  syncPhoto(updated);
+}
+async function toggleInvMode(idx){
+  if(!currentDetail) return;
+  const inv=[...(currentDetail.inventory||[])];
+  const cur = inv[idx].mode === 'continuous' ? 'continuous' : 'discrete';
+  inv[idx] = {...inv[idx], mode: cur === 'continuous' ? 'discrete' : 'continuous'};
+  const updated = await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({inventory: inv})}).then(r=>r.json());
+  syncPhoto(updated); renderDetailInventory(updated);
+}
+async function deleteInvItem(idx){
+  if(!currentDetail)return;
+  const inv=[...(currentDetail.inventory||[])];inv.splice(idx,1);
+  const updated=await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({inventory:inv})}).then(r=>r.json());
+  syncPhoto(updated);renderDetailInventory(updated);
+}
+async function addInvItem(){
+  if(!currentDetail)return;
+  const elem=document.getElementById('inv-add-elem').value.trim();
+  const qty=parseInt(document.getElementById('inv-add-qty').value)||1;
+  const famRaw=document.getElementById('inv-add-fam').value.trim().toLowerCase().replace(/\s+/g,'_')||'autre';
+  if(!elem)return;
+  const inv=[...(currentDetail.inventory||[])];
+  inv.push({family_id:famRaw,subfamily_id:'',element:elem,quantity:qty,unit:'units',condition:'degraded',notes:'',confidence:1.0});
+  const updated=await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({inventory:inv})}).then(r=>r.json());
+  syncPhoto(updated);renderDetailInventory(updated);
+  document.getElementById('inv-add-elem').value='';document.getElementById('inv-add-qty').value='1';document.getElementById('inv-add-fam').value='';
+}
+
+// ── DETECTION PER PHOTO ────────────────────────────────────────────────────────
+async function detectOne(){
+  if(!currentDetail)return;
+  const keywords=document.getElementById('d-keywords').value.split(',').map(k=>k.trim()).filter(Boolean);
+  if(!keywords.length){alert('Entrer au moins un mot-clé (ex: brick, column, window)');return;}
+  const btn=document.getElementById('btn-detect-one');btn.disabled=true;btn.textContent='⚡ SAM3 analyse…';
+  try{
+    const updated=await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}/detect`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({keywords})}).then(r=>r.json());
+    if(updated.error)throw new Error(updated.error);
+    syncPhoto(updated);renderDetailDetection(updated);
+    // Refresh inventory if open to show updated detection thumbnails
+    if(currentView==='inventory') loadInventory();
+  }catch(e){alert('Erreur SAM3: '+e.message);}
+  btn.disabled=false;btn.textContent='⚡ SAM3 — Analyser cette photo';
+}
+async function updateDetCount(idx,val){
+  if(!currentDetail)return;
+  const dets=[...(currentDetail.detections||[])];dets[idx]={...dets[idx],count:Math.max(0,parseInt(val)||0)};
+  const updated=await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({detections:dets})}).then(r=>r.json());
+  syncPhoto(updated);
+}
+async function deleteDetRow(idx){
+  if(!currentDetail)return;
+  const dets=[...(currentDetail.detections||[])];dets.splice(idx,1);
+  const updated=await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({detections:dets})}).then(r=>r.json());
+  syncPhoto(updated);renderDetailDetection(updated);
+}
+
+// ── INVENTORY VIEW ─────────────────────────────────────────────────────────────
+async function loadInventory(){
+  const data=await fetch(`/api/${currentProject.id}/inventory`).then(r=>r.json());
+  taxonomy=data.taxonomy;totalInvItems=data.total_items;
+  document.getElementById('s-items').textContent=totalInvItems;
+  document.getElementById('inv-sub-label').textContent=`${totalInvItems} éléments inventoriés`;
+  document.getElementById('g-nums').textContent=`${data.total_photos_with_inventory} photos analysées sur ${data.total_photos}`;
+  const wrap=document.getElementById('inv-table-wrap');
+  if(!totalInvItems){wrap.innerHTML=`<div class="empty" style="height:180px"><span class="empty-t">Aucun élément — analysez des photos</span></div>`;return;}
+  const famLabels={};taxonomy.forEach(f=>{famLabels[f.id]=f.label;f.subs.forEach(s=>{famLabels[s.id]=s.label;});});
+  wrap.innerHTML=taxonomy.map(fam=>{
+    const famData=data.aggregated[fam.id];if(!famData)return'';let famTotal=0;
+    const subsHtml=fam.subs.map(sub=>{
+      const subData=famData[sub.id];if(!subData)return'';
+      const rows=Object.entries(subData).map(([elem,info])=>{
+        famTotal+=info.quantity;
+        const condHtml=Object.entries(info.conditions).map(([c,n])=>`<span class="cond-badge ${COND_CLASS[c]||'cond-degraded'}">${n} ${c}</span>`).join(' ');
+        return `<tr><td>${elem}</td><td style="font-weight:700;color:var(--blue)">${info.quantity}</td><td>${condHtml}</td><td style="color:var(--s4)">${info.photos.length}</td></tr>`;
+      }).join('');
+      return `<div class="inv-sub"><div class="inv-sub-head">${sub.label}</div><table class="inv-table"><tr><th>Élément</th><th>Qté</th><th>État</th><th>Photos</th></tr>${rows}</table></div>`;
+    }).join('');
+    if(!subsHtml.trim())return'';
+    const famPhotoIds=[];
+    Object.values(famData).forEach(s=>Object.values(s).forEach(info=>info.photos.forEach(pid=>{if(!famPhotoIds.includes(pid))famPhotoIds.push(pid);})));
+    const stripHtml=famPhotoIds.map(pid=>{const ph=photos.find(p=>p.id===pid);if(!ph)return'';const src=ph.preview||(ph.file_type==='image'?ph.path:'')||ph.thumb||'';return src?`<div onclick="openDetail('${ph.id}')" title="${ph.original_name}" style="flex-shrink:0;width:80px;height:80px;cursor:pointer;overflow:hidden;border:1px solid var(--s3);transition:border-color .15s" onmouseover="this.style.borderColor='var(--white)'" onmouseout="this.style.borderColor='var(--s3)'"><img src="${src}" style="width:100%;height:100%;object-fit:cover;display:block"></div>`:''}).join('');
+    const photoStrip=famPhotoIds.length?`<div style="border-top:1px solid var(--s3);padding:8px 10px 10px"><div style="font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--s4);margin-bottom:6px">${famPhotoIds.length} photo${famPhotoIds.length>1?'s':''} associée${famPhotoIds.length>1?'s':''}</div><div style="display:flex;gap:4px;flex-wrap:wrap">${stripHtml}</div></div>`:'';
+    return `<div class="inv-family"><div class="inv-fam-head" onclick="toggleFam(this)"><span class="inv-fam-label">${fam.label}</span><span><span class="inv-fam-total">${famTotal} éléments</span> <span class="inv-fam-toggle">▼</span></span></div><div class="inv-fam-body open">${subsHtml}${photoStrip}</div></div>`;
+  }).join('');
+
+  // ── SAM3 Detection section at bottom of inventory ──
+  renderDetectionInInventory(wrap);
+}
+
+function renderDetectionInInventory(parentWrap){
+  const detPhotos = photos.filter(p => p.detection_entries && p.detection_entries.length > 0);
+  if(!detPhotos.length) return;
+
+  // Group by keyword — same structure as CLASS_TYPES classement
+  const byKeyword = {};
+  detPhotos.forEach(p => {
+    (p.detection_entries || []).forEach(entry => {
+      const kw = (entry.keywords || []).join(', ') || 'detection';
+      if(!byKeyword[kw]) byKeyword[kw] = [];
+      byKeyword[kw].push({ photo: p, entry });
+    });
+  });
+  if(!Object.keys(byKeyword).length) return;
+
+  let html = `<div style="margin-top:24px;border-top:1px solid var(--s3);padding-top:14px">
+    <div style="font-size:8px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--purple);margin-bottom:12px">
+      Segmentations SAM3 — classement par mot-clé
+    </div>`;
+
+  Object.entries(byKeyword).forEach(([kw, entries]) => {
+    const totalObjs = entries.reduce((s,e)=>s+(e.entry.detections||[]).reduce((ss,d)=>ss+d.count,0),0);
+    // Same .class-group structure as classement typologique
+    html += `<div class="class-group" style="margin-bottom:14px">
+      <div class="class-group-head" onclick="toggleClassGroup(this)">
+        <span class="class-group-label" style="color:var(--purple)">🎯 ${kw.toUpperCase()}</span>
+        <div class="class-group-meta">
+          <span class="class-group-count">${entries.length} photo${entries.length>1?'s':''} · ${totalObjs} obj. détectés</span>
+          <span class="class-group-toggle">▼</span>
+        </div>
+      </div>
+      <div class="class-group-body open">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:4px">
+          ${entries.map(({photo,entry})=>{
+            const dets=entry.detections||[];
+            const labels=dets.slice(0,3).map(d=>`${d.count}× ${d.label}`).join(' · ');
+            const safeKwInv = kw.replace(/"/g,'&quot;').replace(/'/g,"&#39;");
+            return `<div class="class-card inv-mask-card" data-photo-id="${photo.id}" data-kw="${safeKwInv}" style="position:relative">
+              <div onclick="openDetailFromInv('${photo.id}')" style="cursor:pointer">
+                <img src="data:image/jpeg;base64,${entry.annotated_b64}" style="width:100%;display:block;aspect-ratio:auto">
+                <div class="class-card-label" style="color:var(--purple)">${labels||photo.original_name}</div>
+              </div>
+              <button class="inv-mask-btn" style="position:absolute;top:3px;right:3px;background:rgba(0,0,0,.85);border:1px solid rgba(157,108,255,.7);color:var(--purple);font-size:8.5px;height:20px;padding:0 5px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;z-index:5" title="Exporter masque PNG transparent">⬇ PNG</button>
+              <button class="inv-photo-del-btn" data-photo-id="${photo.id}" style="position:absolute;top:3px;right:42px;background:rgba(0,0,0,.85);border:1px solid rgba(255,59,48,.7);color:var(--red);font-size:10px;width:20px;height:20px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;z-index:5;padding:0" title="Supprimer la photo du projet">🗑</button>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  html += '</div>';
+  parentWrap.insertAdjacentHTML('beforeend', html);
+  parentWrap.querySelectorAll('.inv-mask-btn').forEach(btn=>{
+    btn.onclick=function(e){
+      e.stopPropagation();e.preventDefault();
+      const card=btn.closest('.inv-mask-card');
+      if(card) exportMaskFromCard(card, btn);
+      return false;
+    };
+  });
+  parentWrap.querySelectorAll('.inv-photo-del-btn').forEach(btn=>{
+    btn.onclick=function(e){
+      e.stopPropagation();e.preventDefault();
+      deletePhotoConfirm(e, btn.dataset.photoId);
+      return false;
+    };
+  });
+}
+
+function openDetailFromInv(photoId){
+  const ph=photos.find(p=>p.id===photoId);
+  if(ph){openDetail(photoId);setTimeout(()=>switchDetailTab('detection'),100);}
+}
+
+function toggleFam(head){const body=head.nextElementSibling,arrow=head.querySelector('.inv-fam-toggle');body.classList.toggle('open');arrow.style.transform=body.classList.contains('open')?'':'rotate(-90deg)';}
+
+// ── TAXONOMY ───────────────────────────────────────────────────────────────────
+function toggleTaxEditor(){const ed=document.getElementById('tax-editor');ed.classList.toggle('open');if(ed.classList.contains('open'))renderTaxEditor();}
+function renderTaxEditor(){
+  document.getElementById('tax-editor-content').innerHTML=taxonomy.map(fam=>`
+    <div class="tax-fam-row" style="flex-direction:column;align-items:flex-start;gap:3px">
+      <div style="display:flex;align-items:center;gap:4px;width:100%">
+        <input class="tax-edit-input" value="${fam.label}" onblur="renameFam('${fam.id}',this.value)" style="flex:1">
+        <button class="btn-tax" onclick="addSubFam('${fam.id}')">+ Sub</button>
+        <button class="btn-tax del" onclick="deleteFam('${fam.id}')">✕</button>
+      </div>
+      <div style="padding-left:10px;width:100%">${fam.subs.map(sub=>`
+        <div style="display:flex;align-items:center;gap:4px;padding:2px 0;border-bottom:1px solid var(--s3)">
+          <input class="tax-edit-input" value="${sub.label}" style="flex:1;font-size:8px" onblur="renameSubFam('${fam.id}','${sub.id}',this.value)">
+          <button class="btn-tax" onclick="addElement('${fam.id}','${sub.id}')">+ Élém</button>
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+async function addFamily(){const inp=document.getElementById('new-fam-input'),label=inp.value.trim();if(!label)return;await fetch(`/api/${currentProject.id}/taxonomy/family`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({label})});inp.value='';taxonomy=await fetch(`/api/${currentProject.id}/taxonomy`).then(r=>r.json());renderTaxEditor();}
+async function deleteFam(fid){if(!confirm('Supprimer?'))return;await fetch(`/api/${currentProject.id}/taxonomy/family/${fid}`,{method:'DELETE'});taxonomy=await fetch(`/api/${currentProject.id}/taxonomy`).then(r=>r.json());renderTaxEditor();}
+async function renameFam(fid,label){await fetch(`/api/${currentProject.id}/taxonomy/family/${fid}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({label})});taxonomy=await fetch(`/api/${currentProject.id}/taxonomy`).then(r=>r.json());}
+async function renameSubFam(fid,sid,label){const tax=JSON.parse(JSON.stringify(taxonomy));const fam=tax.find(f=>f.id===fid);if(fam){const sub=fam.subs.find(s=>s.id===sid);if(sub)sub.label=label;}await fetch(`/api/${currentProject.id}/taxonomy`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(tax)});taxonomy=tax;}
+async function addSubFam(fid){const label=prompt('Nom de la sous-famille:');if(!label)return;await fetch(`/api/${currentProject.id}/taxonomy/family/${fid}/sub`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({label})});taxonomy=await fetch(`/api/${currentProject.id}/taxonomy`).then(r=>r.json());renderTaxEditor();}
+async function addElement(fid,sid){const element=prompt("Nom de l'élément:");if(!element)return;await fetch(`/api/${currentProject.id}/taxonomy/family/${fid}/sub/${sid}/element`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({element})});}
+
+// ── MAP DIMENSION TOGGLE ──────────────────────────────────────────────────────
+let mapDimension = '2d'; // '2d' | '3d'
+let glbScene = null, glbCamera = null, glbRenderer = null, glbAnimId = null;
+let glbOrbitTarget = new THREE.Vector3(0,0,0);
+let glbOrbitRadius = 10, glbOrbitPhi = Math.PI/3, glbOrbitTheta = 0;
+let glbDragging = false, glbLastMouse = {x:0,y:0};
+let glbRightDrag = false;
+let glbMesh = null;
+
+function setMapDimension(dim){
+  mapDimension = dim;
+  document.getElementById('map-dim-2d').classList.toggle('active', dim==='2d');
+  document.getElementById('map-dim-3d').classList.toggle('active', dim==='3d');
+  document.getElementById('map-container').style.display = dim==='2d' ? '' : 'none';
+  document.getElementById('map-3d-container').style.display = dim==='3d' ? 'flex' : 'none';
+  document.getElementById('btn-change-2d').style.display = dim==='2d' ? '' : 'none';
+  document.getElementById('btn-change-3d').style.display = dim==='3d' ? '' : 'none';
+  if(dim==='3d'){
+    initGLBRenderer();
+    render3DPins();
+  } else {
+    stopGLB();
+  }
+}
+
+function initGLBRenderer(){
+  const canvas = document.getElementById('map-3d-canvas');
+  if(glbRenderer) return; // already init
+  glbRenderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:false});
+  glbRenderer.setPixelRatio(window.devicePixelRatio);
+  glbRenderer.setClearColor(0x111111);
+  glbScene = new THREE.Scene();
+  glbCamera = new THREE.PerspectiveCamera(45, canvas.clientWidth/canvas.clientHeight, 0.01, 1000);
+  updateGLBCamera();
+  // Lights
+  const amb = new THREE.AmbientLight(0xffffff, 0.6);
+  glbScene.add(amb);
+  const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+  dir.position.set(5,10,5);
+  glbScene.add(dir);
+  const dir2 = new THREE.DirectionalLight(0xffffff, 0.3);
+  dir2.position.set(-5,-3,-5);
+  glbScene.add(dir2);
+  // Resize observer
+  const ro = new ResizeObserver(()=>resizeGLB());
+  ro.observe(canvas);
+  // Mouse events for orbit
+  canvas.addEventListener('mousedown', onGLBMouseDown);
+  canvas.addEventListener('mousemove', onGLBMouseMove);
+  canvas.addEventListener('mouseup', ()=>{glbDragging=false;glbRightDrag=false;});
+  canvas.addEventListener('wheel', onGLBWheel, {passive:false});
+  canvas.addEventListener('contextmenu', e=>e.preventDefault());
+  canvas.addEventListener('click', onGLBClick);
+  glbLoop();
+}
+
+function resizeGLB(){
+  const canvas = document.getElementById('map-3d-canvas');
+  const w = canvas.clientWidth, h = canvas.clientHeight;
+  if(!w||!h) return;
+  glbRenderer.setSize(w, h, false);
+  glbCamera.aspect = w/h;
+  glbCamera.updateProjectionMatrix();
+}
+
+function updateGLBCamera(){
+  const x = glbOrbitTarget.x + glbOrbitRadius * Math.sin(glbOrbitPhi) * Math.sin(glbOrbitTheta);
+  const y = glbOrbitTarget.y + glbOrbitRadius * Math.cos(glbOrbitPhi);
+  const z = glbOrbitTarget.z + glbOrbitRadius * Math.sin(glbOrbitPhi) * Math.cos(glbOrbitTheta);
+  glbCamera.position.set(x,y,z);
+  glbCamera.lookAt(glbOrbitTarget);
+}
+
+function glbLoop(){
+  glbAnimId = requestAnimationFrame(glbLoop);
+  resizeGLB();
+  glbRenderer.render(glbScene, glbCamera);
+}
+
+function stopGLB(){
+  if(glbAnimId) cancelAnimationFrame(glbAnimId);
+  glbAnimId = null;
+}
+
+function onGLBMouseDown(e){
+  glbDragging = true;
+  glbRightDrag = e.button === 2;
+  glbLastMouse = {x:e.clientX, y:e.clientY};
+}
+
+function onGLBMouseMove(e){
+  if(!glbDragging) return;
+  const dx = e.clientX - glbLastMouse.x;
+  const dy = e.clientY - glbLastMouse.y;
+  glbLastMouse = {x:e.clientX, y:e.clientY};
+  if(glbRightDrag || e.buttons === 2){
+    // Pan
+    const right = new THREE.Vector3();
+    const up = new THREE.Vector3(0,1,0);
+    right.crossVectors(glbCamera.getWorldDirection(new THREE.Vector3()), up).normalize();
+    const panSpeed = glbOrbitRadius * 0.001;
+    glbOrbitTarget.addScaledVector(right, -dx * panSpeed);
+    glbOrbitTarget.addScaledVector(up, dy * panSpeed);
+  } else {
+    // Orbit
+    glbOrbitTheta -= dx * 0.01;
+    glbOrbitPhi = Math.max(0.05, Math.min(Math.PI-0.05, glbOrbitPhi - dy * 0.01));
+  }
+  updateGLBCamera();
+  render3DPins();
+}
+
+function onGLBWheel(e){
+  e.preventDefault();
+  glbOrbitRadius = Math.max(0.5, glbOrbitRadius * (1 + e.deltaY * 0.001));
+  updateGLBCamera();
+}
+
+function onGLBClick(e){
+  if(!currentDetail || mapMode !== 'place') return;
+  // Raycast onto the GLB mesh to get 3D position
+  const canvas = document.getElementById('map-3d-canvas');
+  const rect = canvas.getBoundingClientRect();
+  const mouse = new THREE.Vector2(
+    ((e.clientX - rect.left) / rect.width) * 2 - 1,
+    -((e.clientY - rect.top) / rect.height) * 2 + 1
+  );
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(mouse, glbCamera);
+  const objects = [];
+  if(glbMesh) glbMesh.traverse(obj=>{ if(obj.isMesh) objects.push(obj); });
+  const hits = raycaster.intersectObjects(objects, false);
+  if(hits.length > 0){
+    const pt = hits[0].point;
+    // Store as normalized 3D position relative to bounding box
+    const bbox = new THREE.Box3().setFromObject(glbMesh);
+    const size = new THREE.Vector3();
+    bbox.getSize(size);
+    const center = new THREE.Vector3();
+    bbox.getCenter(center);
+    const nx = (pt.x - bbox.min.x) / (size.x || 1);
+    const ny = (pt.y - bbox.min.y) / (size.y || 1);
+    const nz = (pt.z - bbox.min.z) / (size.z || 1);
+    // Use nx, nz as the 2D equivalent for storage (top-down)
+    placeFromDetail3D(nx, nz, {x:pt.x, y:pt.y, z:pt.z});
+  }
+}
+
+async function placeFromDetail3D(nx, nz, world){
+  if(!currentDetail) return;
+  // 3D location stored separately from 2D location
+  currentDetail.location_3d = {x:nx, y:nz, world};
+  renderLocationTab(currentDetail);
+  const updated = await fetch(`/api/${currentProject.id}/photos/${currentDetail.id}`,{
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({location_3d: {x:nx, y:nz, world}})
+  }).then(r=>r.json());
+  syncPhoto(updated);
+  renderLocationTab(updated);
+  renderGrid();
+  loadMap();
+}
+
+function render3DPins(){
+  if(mapDimension !== '3d' || !glbMesh || !glbCamera || !glbRenderer) return;
+  const container = document.getElementById('map-3d-pins');
+  container.innerHTML = '';
+  const canvas = document.getElementById('map-3d-canvas');
+  const bbox = new THREE.Box3().setFromObject(glbMesh);
+  const size = new THREE.Vector3();
+  bbox.getSize(size);
+
+  // Use full photos array (not mapData) to get location_3d
+  photos.forEach(p => {
+    if(!p.location_3d) return; // 3D pins only in 3D mode
+    let worldPos;
+    if(p.location_3d.world){
+      worldPos = new THREE.Vector3(p.location_3d.world.x, p.location_3d.world.y, p.location_3d.world.z);
+    } else {
+      worldPos = new THREE.Vector3(
+        bbox.min.x + p.location_3d.x * size.x,
+        bbox.min.y + size.y * 0.5,
+        bbox.min.z + p.location_3d.y * size.z
+      );
+    }
+    // Project to screen
+    const projected = worldPos.clone().project(glbCamera);
+    const x = (projected.x * 0.5 + 0.5) * canvas.clientWidth;
+    const y = (-projected.y * 0.5 + 0.5) * canvas.clientHeight;
+    if(projected.z > 1) return; // behind camera
+
+    const pin = document.createElement('div');
+    pin.className = 'pin-3d';
+    pin.style.left = x + 'px';
+    pin.style.top = y + 'px';
+    pin.style.pointerEvents = 'all';
+    pin.innerHTML = `<div class="pin-3d-label">${p.original_name}</div><div class="pin-3d-line"></div><div class="pin-3d-dot"></div>`;
+    pin.onclick = () => { const ph = photos.find(x=>x.id===p.id); if(ph){ switchView('gallery'); openDetail(ph.id); }};
+    container.appendChild(pin);
+  });
+}
+
+function fitCameraToMesh(mesh){
+  const bbox = new THREE.Box3().setFromObject(mesh);
+  const center = new THREE.Vector3();
+  bbox.getCenter(center);
+  const size = new THREE.Vector3();
+  bbox.getSize(size);
+  const maxDim = Math.max(size.x, size.y, size.z);
+  // Center at origin
+  mesh.position.sub(center);
+  // Normalize scale so largest dimension = 10 units
+  if(maxDim > 0){ const s = 10/maxDim; mesh.scale.setScalar(s); }
+  // Recompute after scaling
+  const bbox2 = new THREE.Box3().setFromObject(mesh);
+  const size2 = new THREE.Vector3(); bbox2.getSize(size2);
+  const maxDim2 = Math.max(size2.x, size2.y, size2.z);
+  glbOrbitRadius = maxDim2 * 1.8;
+  glbOrbitTarget.set(0,0,0);
+  glbOrbitPhi = Math.PI / 3.5;
+  glbOrbitTheta = 0.6;
+  glbCamera.near = maxDim2 * 0.001;
+  glbCamera.far = maxDim2 * 100;
+  glbCamera.updateProjectionMatrix();
+  updateGLBCamera();
+  render3DPins();
+  document.getElementById('map-3d-empty').style.display = 'none';
+}
+
+async function loadScript(url){
+  if(document.querySelector(`script[src="${url}"]`)) return;
+  return new Promise((res,rej)=>{
+    const s=document.createElement('script');s.src=url;s.onload=res;s.onerror=rej;
+    document.head.appendChild(s);
+  });
+}
+
+async function load3DModel(input){
+  const file = input.files[0];
+  if(!file) return;
+  const ext = file.name.split('.').pop().toLowerCase();
+  initGLBRenderer();
+
+  if(ext === 'ply'){
+    // PLY — point cloud or mesh
+    await loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/PLYLoader.js');
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const loader = new THREE.PLYLoader();
+      const geometry = loader.parse(e.target.result);
+      geometry.computeVertexNormals();
+      // PLY can be point cloud or mesh — detect by index count
+      let mesh;
+      if(geometry.index || geometry.attributes.position.count > 0){
+        // Check if it has faces (indexed) or just points
+        if(geometry.index && geometry.index.count > 0){
+          // Mesh
+          const mat = new THREE.MeshStandardMaterial({
+            vertexColors: geometry.attributes.color ? true : false,
+            color: geometry.attributes.color ? 0xffffff : 0xcccccc,
+            roughness: 0.7, metalness: 0.1,
+          });
+          mesh = new THREE.Mesh(geometry, mat);
+        } else {
+          // Point cloud
+          const mat = new THREE.PointsMaterial({
+            vertexColors: geometry.attributes.color ? true : false,
+            color: geometry.attributes.color ? 0xffffff : 0x4d9fff,
+            size: 0.05,
+            sizeAttenuation: true,
+          });
+          mesh = new THREE.Points(geometry, mat);
+        }
+      }
+      if(!mesh){ alert('PLY vide ou non supporté'); return; }
+      if(glbMesh) glbScene.remove(glbMesh);
+      glbMesh = mesh;
+      glbScene.add(glbMesh);
+      fitCameraToMesh(glbMesh);
+    };
+    reader.readAsArrayBuffer(file);
+
+  } else {
+    // GLB / GLTF
+    await loadScript('https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js');
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const loader = new THREE.GLTFLoader();
+      loader.parse(e.target.result, '', (gltf) => {
+        if(glbMesh) glbScene.remove(glbMesh);
+        glbMesh = gltf.scene;
+        glbScene.add(glbMesh);
+        fitCameraToMesh(glbMesh);
+      }, (err) => { alert('Erreur GLB: ' + err.message); });
+    };
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+// Keep loadGLB as alias for backward compat
+const loadGLB = load3DModel;
+
+// ── MAP ────────────────────────────────────────────────────────────────────────
+async function loadMap(){mapData=await fetch(`/api/${currentProject.id}/map`).then(r=>r.json());renderMap();}
+function setMapMode(m){
+  mapMode=m;
+  document.getElementById('mode-place').classList.toggle('active',m==='place');
+  document.getElementById('mode-view').classList.toggle('active',m==='view');
+  document.getElementById('map-container').classList.toggle('view-mode',m==='view');
+  document.getElementById('map-hint').textContent=m==='place'?'Ouvre une photo puis localise-la ici':'Cliquer sur un cluster pour voir ses photos';
+}
+function getMapImageBounds(){
+  // Returns {left, top, width, height} of actual image within container (accounting for object-fit:contain)
+  const img = document.getElementById('map-img');
+  const container = document.getElementById('map-container');
+  const cw = container.clientWidth, ch = container.clientHeight;
+  const iw = img.naturalWidth || img.width, ih = img.naturalHeight || img.height;
+  if(!iw||!ih) return {left:0,top:0,width:cw,height:ch};
+  const scale = Math.min(cw/iw, ch/ih);
+  const rw = iw*scale, rh = ih*scale;
+  return {left:(cw-rw)/2, top:(ch-rh)/2, width:rw, height:rh};
+}
+
+function mapPinStyle(x, y){
+  // Convert normalized coords to absolute px within container
+  const b = getMapImageBounds();
+  const px = b.left + x * b.width;
+  const py = b.top + y * b.height;
+  return `left:${px}px;top:${py}px`;
+}
+
+function renderMap(){
+  const layer=document.getElementById('map-pins');layer.innerHTML='';
+  const clusterPhotos={};
+  mapData.photos.forEach(p=>{const cid=p.cluster_id||'u';if(!clusterPhotos[cid])clusterPhotos[cid]=[];clusterPhotos[cid].push(p);});
+  // Clusters — big bubbles, clickable to show photo list
+  mapData.clusters.forEach(cluster=>{
+    const ps=clusterPhotos[cluster.id]||[];if(!ps.length)return;
+    const size=Math.max(52,Math.min(90,40+ps.length*9));
+    const div=document.createElement('div');div.className='cluster-marker';
+    div.style.cssText=mapPinStyle(cluster.x,cluster.y)+';transform:translate(-50%,-50%)';
+    div.innerHTML=`<div class="cluster-bubble" style="width:${size}px;height:${size}px">
+      <span class="cluster-count">${ps.length}</span>
+      <span class="cluster-name" id="cname-${cluster.id}">${cluster.label}</span>
+    </div>`;
+    div.querySelector('.cluster-bubble').addEventListener('click',(e)=>{
+      e.stopPropagation();
+      // Single click = open photo list modal
+      // Double click = rename
+      if(e.detail===2){editCluster(e,cluster.id);}
+      else{openClusterModal(cluster,ps);}
+    });
+    layer.appendChild(div);
+  });
+  // Individual photo dots
+  mapData.photos.forEach(p=>{
+    const pin=document.createElement('div');pin.className='map-pin';
+    pin.style.cssText=mapPinStyle(p.location.x,p.location.y)+';transform:translate(-50%,-50%)';
+    pin.innerHTML=`<div class="map-pin-dot"></div><div class="map-pin-label">${p.original_name}</div>`;
+    pin.onclick=()=>{const ph=photos.find(x=>x.id===p.id);if(ph){switchView('gallery');openDetail(ph.id);}};
+    layer.appendChild(pin);
+  });
+  // Also refresh 3D pins if in 3D mode
+  if(mapDimension==='3d') render3DPins();
+}
+
+// ── CLUSTER MODAL ──────────────────────────────────────────────────────────────
+function openClusterModal(cluster, clusterPhotoData){
+  document.getElementById('cluster-modal-title').textContent=cluster.label;
+  document.getElementById('cluster-modal-count').textContent=`${clusterPhotoData.length} photo${clusterPhotoData.length>1?'s':''}`;
+  const grid=document.getElementById('cluster-modal-grid');
+  grid.innerHTML=clusterPhotoData.map(cp=>{
+    const ph=photos.find(p=>p.id===cp.id);
+    const src=ph?(ph.preview||(ph.file_type==='image'?ph.path:'')||ph.thumb||''):cp.thumb||'';
+    return src?`<div class="cluster-photo-card" onclick="openPhotoFromCluster('${cp.id}')">
+      <img src="${src}" alt="${cp.original_name}">
+      <div class="cluster-photo-name">${cp.original_name}</div>
+    </div>`:''}).join('');
+  document.getElementById('cluster-modal-bg').classList.add('open');
+}
+function openPhotoFromCluster(photoId){
+  closeClusterModalDirect();
+  switchView('gallery');
+  setTimeout(()=>openDetail(photoId),100);
+}
+function closeClusterModal(e){if(e.target===document.getElementById('cluster-modal-bg'))closeClusterModalDirect();}
+function closeClusterModalDirect(){document.getElementById('cluster-modal-bg').classList.remove('open');}
+
+function editCluster(e,cid){
+  e.stopPropagation();
+  const nameEl=document.getElementById(`cname-${cid}`),current=nameEl.textContent;
+  nameEl.innerHTML=`<input class="cluster-edit-input" value="${current}" onblur="saveClusterName('${cid}',this.value)" onkeydown="if(event.key==='Enter')this.blur()">`;
+  nameEl.querySelector('input').focus();
+}
+async function saveClusterName(cid,label){await fetch(`/api/${currentProject.id}/clusters/${cid}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({label})});await loadMap();}
+async function uploadMap(input){const file=input.files[0];if(!file)return;const fd=new FormData();fd.append('map',file);await fetch('/api/sitemap',{method:'POST',body:fd});const t=Date.now();document.getElementById('map-img').src=`/assets/site_map.png?t=${t}`;document.getElementById('map-mini-img').src=`/assets/site_map.png?t=${t}`;}
+
+// ── CLASSEMENT ─────────────────────────────────────────────────────────────────
+function loadClassement(){
+  const wrap=document.getElementById('class-content');
+  if(!photos.length){wrap.innerHTML=`<div class="empty" style="height:200px"><span class="empty-t">Aucune photo</span></div>`;return;}
+  const groups=CLASS_TYPES.map(type=>{
+    const auto=photos.filter(p=>{
+      const invMatch=(p.inventory||[]).some(item=>type.keywords.some(kw=>item.element.toLowerCase().includes(kw.toLowerCase())));
+      const tagMatch=(p.tags||[]).some(t=>type.keywords.some(kw=>t.toLowerCase().includes(kw.toLowerCase())));
+      const descMatch=type.keywords.some(kw=>(p.description||'').toLowerCase().includes(kw.toLowerCase()));
+      return invMatch||tagMatch||descMatch;
+    }).map(p=>p.id);
+    const overrideAdd=(classementOverrides[type.id]?.add||[]);
+    const overrideRemove=new Set(classementOverrides[type.id]?.remove||[]);
+    const finalIds=[...new Set([...auto,...overrideAdd])].filter(id=>!overrideRemove.has(id));
+    return{...type,photoIds:finalIds};
+  }).filter(g=>g.photoIds.length>0);
+  if(!groups.length){wrap.innerHTML=`<div class="empty" style="height:200px"><span class="empty-t">Aucune correspondance détectée</span></div>`;return;}
+  wrap.innerHTML=groups.map(g=>`
+    <div class="class-group">
+      <div class="class-group-head" onclick="toggleClassGroup(this)">
+        <span class="class-group-label">${g.label}</span>
+        <div class="class-group-meta"><span class="class-group-count">${g.photoIds.length} photo${g.photoIds.length>1?'s':''}</span><span class="class-group-toggle">▼</span></div>
+      </div>
+      <div class="class-group-body open">
+        <div class="class-grid">
+          ${g.photoIds.map(pid=>{const p=photos.find(x=>x.id===pid);if(!p)return'';const src=p.preview||(p.file_type==='image'?p.path:'')||p.thumb||'';return src?`<div class="class-card" onclick="openDetail('${p.id}')">
+            <img src="${src}" loading="lazy" alt="">
+            <div class="class-card-label">${p.original_name}</div>
+            <button class="class-card-remove" onclick="removeFromClassement(event,'${g.id}','${p.id}')" title="Retirer de cette catégorie">✕</button>
+            <button class="class-card-delete" onclick="deletePhotoConfirm(event,'${p.id}')" title="Supprimer définitivement la photo du projet">🗑</button>
+          </div>`:''}).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+}
+function toggleClassGroup(head){const body=head.nextElementSibling,arrow=head.querySelector('.class-group-toggle');body.classList.toggle('open');arrow.style.transform=body.classList.contains('open')?'':'rotate(-90deg)';}
+async function removeFromClassement(e,groupId,photoId){
+  e.stopPropagation();
+  if(!classementOverrides[groupId])classementOverrides[groupId]={add:[],remove:[]};
+  if(!classementOverrides[groupId].remove.includes(photoId))classementOverrides[groupId].remove.push(photoId);
+  classementOverrides[groupId].add=classementOverrides[groupId].add.filter(id=>id!==photoId);
+  await fetch(`/api/${currentProject.id}/classement-overrides`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(classementOverrides)});
+  loadClassement();
+}
+
+// ── GEOMETRIE — classification by geometric form ─────────────────────────────
+const GEOM_TYPES = [
+  {id:'cylindrique', label:'Cylindrique',
+   desc:'Tuyaux, colonnes rondes, cuves, silos, tambours, conduits',
+   keywords:['pipe','tube','cylinder','silo','tank','drum','conduit','chimney','tuyau','colonne ronde','cuve','reservoir','cheminee','conduit','rouleau'],
+   svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="30" y1="20" x2="30" y2="80"/><line x1="70" y1="20" x2="70" y2="80"/><ellipse cx="50" cy="20" rx="20" ry="6"/><ellipse cx="50" cy="80" rx="20" ry="6"/><line x1="50" y1="14" x2="50" y2="86" stroke-dasharray="2 2" opacity="0.4"/></svg>`},
+  {id:'prismatique', label:'Prismatique',
+   desc:'Poutres IPE/UPN, parpaings, dalles, panneaux, blocs rectangulaires',
+   keywords:['beam','column','block','slab','panel','brick','ipe','upn','hea','poutre','dalle','parpaing','brique','panneau','bloc','linteau'],
+   svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M 25 35 L 70 35 L 75 30 L 30 30 Z" /><path d="M 70 35 L 70 75 L 75 70 L 75 30 Z" /><path d="M 25 35 L 25 75 L 70 75 L 70 35 Z" /><line x1="20" y1="80" x2="35" y2="80" stroke-dasharray="2 2"/></svg>`},
+  {id:'plaque', label:'Plaque mince',
+   desc:'Tôles, vitrages, membranes, plaques de plâtre, panneaux fins',
+   keywords:['sheet','plate','glass','membrane','plywood','tile','tole','vitre','vitrage','plaque','membrane','platre'],
+   svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M 15 40 L 65 40 L 85 60 L 35 60 Z" /><path d="M 65 40 L 65 45 L 85 65 L 85 60" /><path d="M 35 60 L 35 65 L 85 65" /><line x1="15" y1="35" x2="20" y2="35" /><line x1="15" y1="40" x2="15" y2="45" /></svg>`},
+  {id:'filaire', label:'Filaire',
+   desc:'Câbles, tirants, barres fines, profilés, fers à béton',
+   keywords:['cable','wire','rod','rebar','tie','rope','bar','tirant','cable','barre','fer','tige','tenseur'],
+   svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="20" y1="30" x2="80" y2="70" /><circle cx="20" cy="30" r="3" fill="currentColor" /><circle cx="80" cy="70" r="3" fill="currentColor" /><line x1="20" y1="40" x2="30" y2="40" stroke-dasharray="2 2" opacity="0.4"/><line x1="20" y1="30" x2="20" y2="40" stroke-dasharray="2 2" opacity="0.4"/></svg>`},
+  {id:'conique', label:'Conique / pyramidal',
+   desc:'Trémies, hottes, entonnoirs, toitures coniques',
+   keywords:['hopper','funnel','cone','pyramid','tremie','hotte','entonnoir','cone','pyramide','toit conique'],
+   svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M 25 30 L 75 30 L 55 80 L 45 80 Z" /><line x1="50" y1="30" x2="50" y2="80" stroke-dasharray="2 2" opacity="0.4"/><ellipse cx="50" cy="30" rx="25" ry="5" /></svg>`},
+  {id:'voute', label:'Voûté / courbe',
+   desc:'Arches, voûtes, cintres, coques, surfaces courbes',
+   keywords:['arch','vault','dome','curve','shell','arc','arche','voute','dome','courbe','cintre','coque'],
+   svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M 20 70 L 20 50 Q 50 20 80 50 L 80 70" /><path d="M 20 70 L 80 70" /><line x1="20" y1="75" x2="80" y2="75" stroke-dasharray="2 2" opacity="0.4"/><line x1="50" y1="35" x2="50" y2="70" stroke-dasharray="2 2" opacity="0.4"/></svg>`},
+  {id:'treillis', label:'Treillis / facetté',
+   desc:'Charpentes en treillis, croix de Saint-André, structures triangulées, échafaudages',
+   keywords:['truss','lattice','frame','scaffold','triangulated','treillis','charpente','echafaudage','triangulation','contreventement'],
+   svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M 15 70 L 50 25 L 85 70 Z" /><line x1="15" y1="70" x2="85" y2="70" /><line x1="32" y1="70" x2="50" y2="25" /><line x1="68" y1="70" x2="50" y2="25" /><line x1="32" y1="70" x2="68" y2="70" stroke-dasharray="2 2" opacity="0.5"/></svg>`},
+  {id:'agregat', label:'Granulaire / agrégat',
+   desc:'Gravats, briques en vrac, fragments, débris, blocs disjoints',
+   keywords:['rubble','debris','aggregate','gravel','fragment','scrap','chunk','gravats','debris','fragment','vrac','agregat','eclat'],
+   svg:`<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="1.2"><polygon points="20,60 35,55 30,72" /><polygon points="40,68 55,62 60,78 45,80" /><polygon points="62,55 78,52 80,68 70,72" /><polygon points="25,75 38,78 32,85" /><polygon points="55,82 68,80 65,88" /></svg>`},
+];
+
+
+function classifyPhotoGeometry(p){
+  const text = [
+    ...(p.inventory||[]).map(i=>i.element),
+    ...(p.tags||[]),
+    ...(p.detection_entries||[]).flatMap(e=>e.keywords||[]),
+    p.description||''
+  ].join(' ').toLowerCase();
+  const matched = [];
+  for(const type of GEOM_TYPES){
+    if(type.keywords.some(kw => text.includes(kw.toLowerCase()))) matched.push(type.id);
+  }
+  return matched;
+}
+
+function loadGeometrie(){
+  const wrap = document.getElementById('geom-content');
+  if(!photos.length){wrap.innerHTML='<div class="empty" style="height:200px"><span class="empty-t">Aucune photo</span></div>';return;}
+
+  const groups = GEOM_TYPES.map(type=>{
+    const autoIds = photos.filter(p=>classifyPhotoGeometry(p).includes(type.id)).map(p=>p.id);
+    const overrideAdd = (geometrieOverrides[type.id]?.add||[]);
+    const overrideRemove = new Set(geometrieOverrides[type.id]?.remove||[]);
+    const finalIds = [...new Set([...autoIds, ...overrideAdd])].filter(id => !overrideRemove.has(id));
+    return {...type, photoIds: finalIds};
+  }).filter(g=>g.photoIds.length>0);
+
+  if(!groups.length){wrap.innerHTML='<div class="empty" style="height:200px"><span class="empty-t">Aucune correspondance — analyse des photos requise</span></div>';return;}
+
+  // Toolbar with bulk-vectorize button
+  const totalPhotos = groups.reduce((s,g)=>s+g.photoIds.length,0);
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--s3)">
+    <div style="font-size:7px;color:var(--s5);letter-spacing:.06em;text-transform:uppercase">${groups.length} typologie${groups.length>1?'s':''} · ${totalPhotos} photo${totalPhotos>1?'s':''}</div>
+    <button class="btn-det" onclick="vectorizeAllVisible()" id="btn-vect-all" title="Génère les dessins vectoriels architecte de tous les éléments via IA">⚡ Vectoriser tous les éléments visibles</button>
+  </div>`;
+
+  html += groups.map(g=>`
+    <div class="class-group geom-group">
+      <div class="class-group-head" onclick="toggleClassGroup(this)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="geom-icon">${g.svg}</div>
+          <div>
+            <span class="class-group-label">${g.label}</span>
+            <div style="font-size:7px;color:var(--s5);font-weight:400;letter-spacing:.04em;margin-top:1px">${g.desc}</div>
+          </div>
+        </div>
+        <div class="class-group-meta">
+          <span class="class-group-count">${g.photoIds.length} photo${g.photoIds.length>1?'s':''}</span>
+          <span class="class-group-toggle">▼</span>
+        </div>
+      </div>
+      <div class="class-group-body open">
+        <div class="geom-grid">
+          ${g.photoIds.map(pid=>{
+            const p=photos.find(x=>x.id===pid);if(!p)return'';
+            const src=p.preview||(p.file_type==='image'?p.path:'')||p.thumb||'';
+            const items=(p.inventory||[]).filter(i=>g.keywords.some(kw=>i.element.toLowerCase().includes(kw.toLowerCase())));
+            const label = items.length ? items.slice(0,2).map(i=>i.element_subtype ? `${i.element} (${i.element_subtype})` : i.element).join(', ') : p.original_name;
+            const elemName = items[0]?.element || g.label;
+            const cacheKey = p.id + '__' + (items[0]?.element||'_default');
+            const cachedSvg = vectorDrawings[cacheKey];
+            return `<div class="geom-card">
+              <div class="geom-card-photo" onclick="openDetail('${p.id}')">
+                ${src?`<img src="${src}" loading="lazy" alt="">`:''}
+                <button class="class-card-remove" onclick="removeFromGeometrie(event,'${g.id}','${p.id}')" title="Retirer de cette catégorie">✕</button>
+                <button class="class-card-delete" onclick="deletePhotoConfirm(event,'${p.id}')" title="Supprimer définitivement la photo du projet">🗑</button>
+              </div>
+              <div class="geom-card-vector" data-cache-key="${cacheKey}" data-photo-id="${p.id}" data-elem="${(items[0]?.element||g.label).replace(/"/g,'&quot;')}" data-keyword="">
+                ${cachedSvg ? cachedSvg : `<div class="geom-vec-placeholder">
+                  <button class="geom-vec-btn" onclick="vectorizeOne(this.parentElement.parentElement)">⚡ Tracer<br><span style="font-size:6px;opacity:.7">depuis SAM3</span></button>
+                </div>`}
+              </div>
+              <div class="geom-card-label">${label}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+
+  wrap.innerHTML = html;
+}
+
+let vectorDrawings = {}; // cache: photoId__elementName -> svg
+
+async function loadVectorDrawings(){
+  try{
+    const data = await fetch(`/api/${currentProject.id}/vector-drawings`).then(r=>r.json());
+    vectorDrawings = data || {};
+  }catch(e){ vectorDrawings = {}; }
+}
+
+async function vectorizeOne(cardVecEl){
+  const cacheKey = cardVecEl.dataset.cacheKey;
+  const photoId = cardVecEl.dataset.photoId;
+  const elem = cardVecEl.dataset.elem;
+  const keyword = cardVecEl.dataset.keyword || '';
+  const ph = photos.find(p=>p.id===photoId);
+  if(!ph) return;
+
+  cardVecEl.innerHTML = '<div class="geom-vec-placeholder"><div class="geom-vec-loading">…</div></div>';
+  try{
+    const res = await fetch(`/api/${currentProject.id}/vectorize-element`,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ photo_id: photoId, element: elem, keyword: keyword, cache_key: cacheKey })
+    }).then(r=>r.json());
+    if(res.error) throw new Error(res.error);
+    vectorDrawings[cacheKey] = res.svg;
+    cardVecEl.innerHTML = res.svg;
+  }catch(e){
+    cardVecEl.innerHTML = `<div class="geom-vec-placeholder"><button class="geom-vec-btn" onclick="vectorizeOne(this.parentElement.parentElement)">⚡ Réessayer</button><div style="font-size:6px;color:var(--red);margin-top:3px">${e.message.slice(0,50)}</div></div>`;
+  }
+}
+
+async function vectorizeAllVisible(){
+  const btn = document.getElementById('btn-vect-all');
+  const cards = Array.from(document.querySelectorAll('.geom-card-vector'));
+  const todo = cards.filter(c => !vectorDrawings[c.dataset.cacheKey]);
+  if(!todo.length){ alert('Tous les éléments visibles sont déjà vectorisés'); return; }
+  if(btn){ btn.disabled = true; }
+  let done = 0;
+  for(const c of todo){
+    if(btn) btn.textContent = `Vectorisation ${done+1}/${todo.length}…`;
+    try{ await vectorizeOne(c); }catch(e){ console.warn('vec err', e); }
+    done++;
+    await new Promise(r=>setTimeout(r,200));
+  }
+  if(btn){ btn.textContent = '⚡ Vectoriser tous les éléments visibles'; btn.disabled = false; }
+}
+
+async function deletePhotoConfirm(e, photoId){
+  e.stopPropagation();
+  const p = photos.find(x=>x.id===photoId);
+  const name = p ? (p.original_name||'cette photo') : 'cette photo';
+  if(!confirm(`Supprimer définitivement "${name}" du projet ?\n\nElle sera retirée de toutes les rubriques.`)) return;
+  try{
+    await fetch(`/api/${currentProject.id}/photos/${photoId}`,{method:'DELETE'});
+    photos = photos.filter(x=>x.id!==photoId);
+    // Refresh whichever view is open
+    if(currentView==='geometrie') loadGeometrie();
+    else if(currentView==='classement') loadClassement();
+    else if(currentView==='detection') loadDetection();
+    else if(currentView==='proprietes') loadProprietes();
+    else if(currentView==='inventory') renderInventory();
+    else if(currentView==='gallery') renderGallery();
+    if(typeof loadStats==='function') loadStats();
+  }catch(err){ alert('Erreur suppression: '+err.message); }
+}
+
+async function removeFromGeometrie(e, groupId, photoId){
+  e.stopPropagation();
+  if(!geometrieOverrides[groupId]) geometrieOverrides[groupId]={add:[],remove:[]};
+  if(!geometrieOverrides[groupId].remove.includes(photoId)) geometrieOverrides[groupId].remove.push(photoId);
+  geometrieOverrides[groupId].add = geometrieOverrides[groupId].add.filter(id=>id!==photoId);
+  await fetch(`/api/${currentProject.id}/geometrie-overrides`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(geometrieOverrides)});
+  loadGeometrie();
+}
+
+// ── PROPRIÉTÉS PHYSICO-CHIMIQUES ─────────────────────────────────────────────
+const PROP_CATEGORIES = [
+  {id:'porteur', label:'Porteurs', test:p => p.compression_mpa && p.compression_mpa >= 20,
+   desc:'Compression ≥ 20 MPa — peuvent reprendre des charges structurelles'},
+  {id:'leger', label:'Légers', test:p => p.density_kg_m3 && p.density_kg_m3 < 600,
+   desc:'Densité < 600 kg/m³ — manipulation aisée, structures légères'},
+  {id:'isolant', label:'Isolants', test:p => p.lambda_w_mk && p.lambda_w_mk < 0.3,
+   desc:'λ < 0.3 W/mK — performance thermique d\'enveloppe'},
+  {id:'feu_a1', label:'Feu A1/A2', test:p => p.fire_class && /^A[12]/.test(p.fire_class),
+   desc:'Classe Euroclasse A1 ou A2 — incombustibles'},
+  {id:'reemploi_struct', label:'Réemploi structurel', test:p => p.reuse_role && /porteur|structurel/i.test(p.reuse_role),
+   desc:'Identifiés comme aptes à un usage porteur en réemploi'},
+  {id:'reemploi_remplissage', label:'Réemploi remplissage', test:p => p.reuse_role && /remplissage|cloison/i.test(p.reuse_role),
+   desc:'Cloisonnement, remplissage, second œuvre'},
+  {id:'reemploi_parement', label:'Réemploi parement', test:p => p.reuse_role && /parement|finition|décor/i.test(p.reuse_role),
+   desc:'Parement, finition, traitement de surface'},
+];
+
+function aggregateUniqueElements(){
+  const map = {};
+  photos.forEach(p => {
+    (p.inventory||[]).forEach(item => {
+      const baseName = item.element || 'Inconnu';
+      const subtype = item.element_subtype || '';
+      // Key combines element + subtype so IPE200 and IPE400 are separate rows
+      const key = subtype ? `${baseName} — ${subtype}` : baseName;
+      if(!map[key]) map[key] = {name:key, baseName, subtype, family:item.family_id||'autre', totalQty:0, photoIds:[], sampleItem:item};
+      map[key].totalQty += (item.quantity || 0);
+      if(!map[key].photoIds.includes(p.id)) map[key].photoIds.push(p.id);
+    });
+  });
+  return Object.values(map).sort((a,b)=>b.totalQty - a.totalQty);
+}
+
+function loadProprietes(){
+  const wrap = document.getElementById('prop-content');
+  if(!photos.length){wrap.innerHTML='<div class="empty" style="height:200px"><span class="empty-t">Aucune photo</span></div>';return;}
+
+  const elements = aggregateUniqueElements();
+  if(!elements.length){wrap.innerHTML='<div class="empty" style="height:200px"><span class="empty-t">Aucun élément inventorié</span></div>';return;}
+
+  const characterizedCount = elements.filter(e => elementProperties[e.name]).length;
+  let html = `<div class="prop-toolbar">
+    <div class="prop-mode-tabs">
+      <button class="prop-mode-tab ${propViewMode==='classement'?'active':''}" onclick="setPropMode('classement')">Classement par usage</button>
+      <button class="prop-mode-tab ${propViewMode==='table'?'active':''}" onclick="setPropMode('table')">Fiche matière (tableau)</button>
+    </div>
+    <div class="prop-stats">${characterizedCount} / ${elements.length} éléments caractérisés</div>
+  </div>`;
+
+  if(propViewMode === 'table'){
+    html += renderPropTable(elements);
+  } else {
+    html += renderPropClassement(elements);
+  }
+  wrap.innerHTML = html;
+  setTimeout(attachPropertyHandlers, 0);
+}
+
+function renderPropTable(elements){
+  let html = `<div class="prop-table-wrap">
+    <table class="prop-table">
+      <thead><tr>
+        <th>Élément</th><th>Qté</th>
+        <th>ρ (kg/m³)</th><th>σc (MPa)</th><th>σt (MPa)</th><th>E (GPa)</th>
+        <th>λ (W/mK)</th><th>Feu</th><th>Rôle réemploi</th><th>Mise en œuvre</th>
+        <th></th>
+      </tr></thead>
+      <tbody>`;
+  elements.forEach(e => {
+    const p = elementProperties[e.name] || {};
+    const has = !!elementProperties[e.name];
+    const safe = e.name.replace(/"/g,'&quot;');
+    html += `<tr class="${has?'prop-row-filled':'prop-row-empty'}">
+      <td class="prop-name">${e.name}</td>
+      <td class="prop-qty">${e.totalQty}</td>
+      <td><input class="prop-input" data-elem="${safe}" data-field="density_kg_m3" type="number" step="any" value="${p.density_kg_m3||''}" placeholder="—"></td>
+      <td><input class="prop-input" data-elem="${safe}" data-field="compression_mpa" type="number" step="any" value="${p.compression_mpa||''}" placeholder="—"></td>
+      <td><input class="prop-input" data-elem="${safe}" data-field="tensile_mpa" type="number" step="any" value="${p.tensile_mpa||''}" placeholder="—"></td>
+      <td><input class="prop-input" data-elem="${safe}" data-field="modulus_gpa" type="number" step="any" value="${p.modulus_gpa||''}" placeholder="—"></td>
+      <td><input class="prop-input" data-elem="${safe}" data-field="lambda_w_mk" type="number" step="any" value="${p.lambda_w_mk||''}" placeholder="—"></td>
+      <td><input class="prop-input prop-input-text" data-elem="${safe}" data-field="fire_class" value="${p.fire_class||''}" placeholder="—"></td>
+      <td><input class="prop-input prop-input-text" data-elem="${safe}" data-field="reuse_role" value="${p.reuse_role||''}" placeholder="—"></td>
+      <td><input class="prop-input prop-input-text" data-elem="${safe}" data-field="installation" value="${p.installation||''}" placeholder="—"></td>
+      <td><button class="prop-est-btn" data-elem="${safe}" title="Estimer via IA">⚡</button></td>
+    </tr>`;
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+
+function renderPropClassement(elements){
+  let html = '';
+  PROP_CATEGORIES.forEach(cat => {
+    const matched = elements.filter(e => {
+      const p = elementProperties[e.name];
+      return p && cat.test(p);
+    });
+    if(!matched.length) return;
+    html += `<div class="class-group" style="margin-bottom:12px">
+      <div class="class-group-head" onclick="toggleClassGroup(this)">
+        <div>
+          <span class="class-group-label">${cat.label}</span>
+          <div style="font-size:7px;color:var(--s5);font-weight:400;letter-spacing:.04em;margin-top:1px">${cat.desc}</div>
+        </div>
+        <div class="class-group-meta">
+          <span class="class-group-count">${matched.length} élément${matched.length>1?'s':''}</span>
+          <span class="class-group-toggle">▼</span>
+        </div>
+      </div>
+      <div class="class-group-body open">
+        <div class="prop-elem-grid">
+          ${matched.map(e => {
+            const p = elementProperties[e.name];
+            const ph = photos.find(x => x.id === e.photoIds[0]);
+            const photoSrc = ph ? (ph.preview||(ph.file_type==='image'?ph.path:'')||ph.thumb||'') : '';
+            return `<div class="prop-elem-card" onclick="if('${e.photoIds[0]||''}')openDetail('${e.photoIds[0]||''}')">
+              ${photoSrc?`<img src="${photoSrc}" loading="lazy" alt="">`:''}
+              <div class="prop-elem-body">
+                <div class="prop-elem-name">${e.name}</div>
+                <div class="prop-elem-qty">${e.totalQty} u. · ${e.photoIds.length} photo${e.photoIds.length>1?'s':''}</div>
+                <div class="prop-elem-specs">
+                  ${p.density_kg_m3?`<span>${p.density_kg_m3} kg/m³</span>`:''}
+                  ${p.compression_mpa?`<span>σc ${p.compression_mpa} MPa</span>`:''}
+                  ${p.lambda_w_mk?`<span>λ ${p.lambda_w_mk}</span>`:''}
+                  ${p.fire_class?`<span>${p.fire_class}</span>`:''}
+                </div>
+                ${p.reuse_role?`<div class="prop-elem-role">${p.reuse_role}</div>`:''}
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+  });
+  const uncharact = elements.filter(e => !elementProperties[e.name]);
+  if(uncharact.length){
+    html += `<div class="prop-warn">
+      <div class="prop-warn-title">${uncharact.length} élément${uncharact.length>1?'s':''} non encore caractérisé${uncharact.length>1?'s':''}</div>
+      <div class="prop-warn-body">${uncharact.map(e=>`<span class="prop-warn-pill">${e.name}</span>`).join('')}</div>
+      <button class="btn-det" onclick="estimatePropertiesAll()" style="margin-top:6px">⚡ Estimer toutes les propriétés manquantes</button>
+    </div>`;
+  }
+  if(!html) html = '<div class="empty" style="height:200px"><span class="empty-t">Aucun élément caractérisé — clique "Estimer toutes" pour lancer l\'analyse IA</span></div>';
+  return html;
+}
+
+function setPropMode(mode){ propViewMode = mode; loadProprietes(); }
+
+function attachPropertyHandlers(){
+  document.querySelectorAll('.prop-input').forEach(inp => {
+    inp.onchange = async function(){
+      const elem = inp.dataset.elem.replace(/&quot;/g,'"');
+      const field = inp.dataset.field;
+      const val = inp.value === '' ? null : (inp.classList.contains('prop-input-text') ? inp.value : parseFloat(inp.value));
+      if(!elementProperties[elem]) elementProperties[elem] = {};
+      elementProperties[elem][field] = val;
+      await saveElementProperties();
+    };
+  });
+  document.querySelectorAll('.prop-est-btn').forEach(btn => {
+    btn.onclick = async function(){
+      const elem = btn.dataset.elem.replace(/&quot;/g,'"');
+      const orig = btn.textContent;
+      btn.textContent = '…'; btn.disabled = true;
+      try { await estimateOneElement(elem); } catch(e){ alert('Erreur: '+e.message); }
+      btn.textContent = orig; btn.disabled = false;
+      loadProprietes();
+    };
+  });
+}
+
+async function saveElementProperties(){
+  await fetch(`/api/${currentProject.id}/element-properties`,{
+    method:'PUT', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(elementProperties)
+  });
+}
+
+async function estimateOneElement(elemName){
+  const res = await fetch(`/api/${currentProject.id}/estimate-properties`,{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({element: elemName})
+  }).then(r=>r.json());
+  if(res.error) throw new Error(res.error);
+  if(!elementProperties[elemName]) elementProperties[elemName] = {};
+  Object.assign(elementProperties[elemName], res);
+}
+
+async function estimatePropertiesAll(){
+  const elements = aggregateUniqueElements();
+  const todo = elements.filter(e => !elementProperties[e.name]);
+  if(!todo.length){ alert('Tous les éléments sont déjà caractérisés'); return; }
+  const btn = document.getElementById('btn-est-props');
+  const orig = btn?btn.textContent:'';
+  if(btn){ btn.disabled = true; }
+  let done = 0;
+  for(const e of todo){
+    if(btn) btn.textContent = `Estimation ${done+1}/${todo.length}…`;
+    try { await estimateOneElement(e.name); } catch(err){ console.warn('est err',e.name,err); }
+    done++;
+    loadProprietes();
+    await new Promise(r=>setTimeout(r,250));
+  }
+  if(btn){ btn.textContent = orig; btn.disabled = false; }
+}
+
+// ── DETECTION VIEW ─────────────────────────────────────────────────────────────
+async function loadDetection(){
+  const wrap=document.getElementById('det-content');
+
+  // Collect ALL detection entries across all photos, grouped by keyword
+  const byKeyword={};
+  let totalDetCount=0;
+  photos.forEach(p=>{
+    (p.detection_entries||[]).forEach(entry=>{
+      const kw=(entry.keywords||[]).join(', ')||'detection';
+      if(!byKeyword[kw])byKeyword[kw]=[];
+      byKeyword[kw].push({photo:p,entry});
+      totalDetCount+=(entry.detections||[]).reduce((s,d)=>s+d.count,0);
+    });
+  });
+
+  document.getElementById('s-dets').textContent=totalDetCount;
+
+  if(!Object.keys(byKeyword).length){
+    wrap.innerHTML=`<div class="empty" style="height:280px"><span class="empty-t">Entrer des mots-clés et lancer SAM3 — chaque mot-clé génère un groupe</span></div>`;
+    return;
+  }
+
+  // One class-group per keyword — same format as Classement typologique
+  let html='';
+  Object.entries(byKeyword).forEach(([kw,entries])=>{
+    const totalObjs=entries.reduce((s,e)=>s+(e.entry.detections||[]).reduce((ss,d)=>ss+d.count,0),0);
+    html+=`<div class="class-group" style="margin-bottom:10px">
+      <div class="class-group-head" onclick="toggleClassGroup(this)">
+        <span class="class-group-label" style="color:var(--purple)">🎯 ${kw.toUpperCase()}</span>
+        <div class="class-group-meta">
+          <span class="class-group-count">${entries.length} photo${entries.length>1?'s':''} · ${totalObjs} obj.</span>
+          <span class="class-group-toggle">▼</span>
+        </div>
+      </div>
+      <div class="class-group-body open">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:5px;padding:2px 0">
+          ${entries.map(({photo,entry},ei)=>{
+            const dets=entry.detections||[];
+            const labels=dets.map(d=>`${d.count}× ${d.label}`).join(' · ')||'aucun objet';
+            const objCount=dets.reduce((s,d)=>s+d.count,0);
+            const safeKw=kw.replace(/"/g,'&quot;').replace(/'/g,"&#39;");
+            return `<div class="det-card" data-photo-id="${photo.id}" data-kw="${safeKw}" style="border:1px solid var(--s3);overflow:hidden;position:relative;transition:border-color .15s"
+              onmouseover="this.style.borderColor='var(--purple)';this.querySelector('.det-del-btn').style.opacity='1'"
+              onmouseout="this.style.borderColor='var(--s3)';this.querySelector('.det-del-btn').style.opacity='0'">
+              <div style="cursor:pointer" onclick="openDetAnnotatedFromCard(this.parentElement)">
+                <img src="data:image/jpeg;base64,${entry.annotated_b64}" style="width:100%;display:block">
+                <div style="padding:4px 7px;background:var(--s1)">
+                  <div style="font-size:7px;color:var(--s5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${photo.original_name}</div>
+                  <div style="font-size:6px;color:var(--purple);margin-top:1px">${labels}</div>
+                </div>
+              </div>
+              <button class="det-del-btn" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.85);border:1px solid rgba(255,59,48,.7);color:var(--red);font-size:11px;width:22px;height:22px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;z-index:20;padding:0;opacity:1" title="Supprimer cette détection">✕</button>
+              <button class="det-mask-btn" style="position:absolute;top:4px;right:30px;background:rgba(0,0,0,.85);border:1px solid rgba(157,108,255,.7);color:var(--purple);font-size:9px;height:22px;padding:0 6px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;z-index:20;opacity:1;letter-spacing:.06em" title="Exporter le masque PNG transparent">⬇ PNG</button>
+              <button class="det-photo-del-btn" style="position:absolute;top:4px;right:74px;background:rgba(0,0,0,.85);border:1px solid rgba(255,59,48,.7);color:var(--red);font-size:11px;width:22px;height:22px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center;z-index:20;padding:0;opacity:1" title="Supprimer définitivement la photo du projet" data-photo-id="${photo.id}">🗑</button>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  // Summary counts at bottom
+  html+=`<div style="border-top:1px solid var(--s3);padding-top:10px;margin-top:4px">
+    <div style="font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:var(--s5);margin-bottom:6px">Totaux par composant</div>
+    <div style="border:1px solid var(--s3)">
+      <table class="det-table">
+        <thead><tr><th>Composant</th><th>Quantité totale</th><th>Photos</th><th></th></tr></thead>
+        <tbody id="det-summary-body"></tbody>
+      </table>
+      <div class="det-add-row">
+        <input class="det-add-inp" id="det-add-label" placeholder="Ajouter manuellement…" style="flex:2;min-width:120px">
+        <input class="det-add-inp" id="det-add-count" type="number" min="1" value="1" style="width:50px">
+        <button class="btn-det" style="padding:5px 10px;font-size:7px" onclick="addDetComponent()">+ Ajouter</button>
+      </div>
+    </div>
+  </div>`;
+
+  wrap.innerHTML=html;
+
+  // Wire up delete buttons via event delegation (works even after re-render)
+  wrap.querySelectorAll('.det-del-btn').forEach(btn=>{
+    btn.onclick=function(e){
+      e.stopPropagation(); e.preventDefault();
+      const card=btn.closest('.det-card');
+      if(card) removeDetEntryFromCard(card);
+      return false;
+    };
+  });
+  wrap.querySelectorAll('.det-mask-btn').forEach(btn=>{
+    btn.onclick=function(e){
+      e.stopPropagation(); e.preventDefault();
+      const card=btn.closest('.det-card');
+      if(card) exportMaskFromCard(card, btn);
+      return false;
+    };
+  });
+  wrap.querySelectorAll('.det-photo-del-btn').forEach(btn=>{
+    btn.onclick=function(e){
+      e.stopPropagation(); e.preventDefault();
+      deletePhotoConfirm(e, btn.dataset.photoId);
+      return false;
+    };
+  });
+
+  // Fill summary table from aggregated detections API
+  const data=await fetch(`/api/${currentProject.id}/detections`).then(r=>r.json());
+  const tbody=document.getElementById('det-summary-body');
+  if(tbody&&data.components.length){
+    tbody.innerHTML=data.components.map(c=>`<tr>
+      <td style="font-weight:600">${c.label}</td>
+      <td><input class="det-count-input" type="number" min="0" value="${c.total_count}" onchange="updateAggDetCount('${c.label}',this.value)"></td>
+      <td style="color:var(--s5)">${c.photos.length}</td>
+      <td><button class="det-del-row" onclick="deleteAggDetRow('${c.label}')">✕</button></td>
+    </tr>`).join('');
+  }
+}
+
+async function exportMaskFromCard(card, btn){
+  const photoId=card.dataset.photoId;
+  const kw=card.dataset.kw.replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+  const orig=btn.textContent;
+  btn.textContent='…';btn.disabled=true;
+  try{
+    const res=await fetch(`/api/${currentProject.id}/photos/${photoId}/mask-export`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({keyword:kw})
+    });
+    if(!res.ok){
+      const err=await res.json().catch(()=>({error:'Erreur '+res.status}));
+      throw new Error(err.error||'Export échoué');
+    }
+    const blob=await res.blob();
+    const cd=res.headers.get('Content-Disposition')||'';
+    const m=cd.match(/filename="([^"]+)"/);
+    const filename=m?m[1]:`masque_${kw.replace(/[^a-z0-9_-]/gi,'_')}.png`;
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+    document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    btn.textContent='✓';
+    setTimeout(()=>{btn.textContent=orig;btn.disabled=false;},800);
+  }catch(e){
+    alert('Erreur export masque: '+e.message);
+    btn.textContent=orig;btn.disabled=false;
+  }
+}
+
+async function removeDetEntryFromCard(card){
+  const photoId=card.dataset.photoId;
+  const kw=card.dataset.kw.replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+  const p=photos.find(x=>x.id===photoId);
+  if(!p){console.warn('photo not found',photoId);return;}
+  // Filter out the entry whose keywords joined match this kw
+  const entries=(p.detection_entries||[]).filter(e=>(e.keywords||[]).join(', ')!==kw);
+  // Optimistic UI: hide card immediately
+  card.style.opacity='0.3';
+  card.style.pointerEvents='none';
+  try{
+    const updated=await fetch(`/api/${currentProject.id}/photos/${photoId}`,{
+      method:'PUT',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({detection_entries:entries})
+    }).then(r=>r.json());
+    if(updated.error){throw new Error(updated.error);}
+    syncPhoto(updated);
+    loadDetection();
+    if(currentView==='inventory') loadInventory();
+  }catch(e){
+    alert('Erreur suppression: '+e.message);
+    card.style.opacity='1';
+    card.style.pointerEvents='auto';
+  }
+}
+
+function openDetAnnotatedFromCard(card){
+  const photoId=card.dataset.photoId;
+  const ph=photos.find(p=>p.id===photoId);
+  if(ph){openDetail(photoId);setTimeout(()=>switchDetailTab('detection'),100);}
+}
+
+// Legacy compat — kept in case something still calls these
+function openDetAnnotated(photoId){
+  const ph=photos.find(p=>p.id===photoId);
+  if(ph){openDetail(photoId);setTimeout(()=>switchDetailTab('detection'),100);}
+}
+async function detectAll(){
+  const keywords=document.getElementById('det-keywords').value.split(',').map(k=>k.trim()).filter(Boolean);
+  if(!keywords.length){alert('Entrer au moins un mot-clé (ex: door, brick, column, rust)');return;}
+  const btn=document.getElementById('btn-detect-all');btn.disabled=true;btn.textContent='⚡ SAM3 analyse…';
+  document.getElementById('prog-bg').classList.add('open');
+  document.getElementById('prog-label').textContent=`SAM3 — Segmentation "${keywords.join(', ')}"`;
+  document.getElementById('pt').textContent=photos.length;
+  document.getElementById('pc').textContent='0';
+  document.getElementById('pb').style.width='0%';
+  let done=0;
+  // Process photo by photo — add to existing entries (cumulative per keyword)
+  for(const p of photos){
+    document.getElementById('pf').textContent=p.original_name;
+    try{
+      const updated=await fetch(`/api/${currentProject.id}/photos/${p.id}/detect`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({keywords})
+      }).then(r=>r.json());
+      if(!updated.error) syncPhoto(updated);
+    }catch(e){console.warn('SAM3 error on',p.original_name,e.message);}
+    done++;
+    document.getElementById('pc').textContent=done;
+    document.getElementById('pb').style.width=`${(done/photos.length)*100}%`;
+  }
+  await loadPhotos();
+  await loadDetection();
+  // Also refresh inventory SAM3 section
+  if(currentView==='inventory') loadInventory();
+  document.getElementById('prog-bg').classList.remove('open');
+  btn.disabled=false;btn.textContent='⚡ SAM3 — Analyser tout le projet';
+}
+async function updateAggDetCount(label,val){
+  for(const p of photos){const det=p.detections?.find(d=>d.label===label);if(det){det.count=Math.max(0,parseInt(val)||0);await fetch(`/api/${currentProject.id}/photos/${p.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({detections:p.detections})});}}
+  loadDetection();
+}
+async function deleteAggDetRow(label){
+  for(const p of photos){if(p.detections?.some(d=>d.label===label)){p.detections=p.detections.filter(d=>d.label!==label);await fetch(`/api/${currentProject.id}/photos/${p.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({detections:p.detections})});}}
+  await loadPhotos();loadDetection();
+}
+async function addDetComponent(){
+  const label=document.getElementById('det-add-label').value.trim();
+  const count=parseInt(document.getElementById('det-add-count').value)||1;
+  if(!label||!photos.length)return;
+  const p=photos[0];const dets=[...(p.detections||[])];
+  const existing=dets.find(d=>d.label===label);
+  if(existing)existing.count+=count;else dets.push({label,count,confidence:100,segments:[]});
+  await fetch(`/api/${currentProject.id}/photos/${p.id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({detections:dets})});
+  document.getElementById('det-add-label').value='';document.getElementById('det-add-count').value='1';
+  await loadPhotos();loadDetection();
+}
+
+// ── UPLOAD ─────────────────────────────────────────────────────────────────────
+async function handleFiles(files){
+  if(!files?.length||!currentProject)return;
+  document.getElementById('prog-bg').classList.add('open');
+  document.getElementById('prog-label').textContent='Classification IA en cours';
+  const total=files.length;document.getElementById('pt').textContent=total;let done=0;
+  const BATCH=3;
+  for(let i=0;i<files.length;i+=BATCH){
+    const batch=Array.from(files).slice(i,i+BATCH);const fd=new FormData();batch.forEach(f=>fd.append('photos',f));
+    document.getElementById('pf').textContent=batch.map(f=>f.name).join(', ');
+    try{const r=await fetch(`/api/${currentProject.id}/upload`,{method:'POST',body:fd}).then(r=>r.json());done+=r.processed;}
+    catch{done+=batch.length;}
+    document.getElementById('pc').textContent=done;document.getElementById('pb').style.width=`${(done/total)*100}%`;
+  }
+  document.getElementById('prog-bg').classList.remove('open');
+  await Promise.all([loadPhotos(),loadStats()]);
+  if(currentView==='inventory')loadInventory();
+}
+document.getElementById('btn-upload').onclick=()=>document.getElementById('file-input').click();
+document.getElementById('file-input').onchange=e=>handleFiles(e.target.files);
+document.addEventListener('dragover',e=>{e.preventDefault();document.body.classList.add('dragging');});
+document.addEventListener('dragleave',e=>{if(!e.relatedTarget)document.body.classList.remove('dragging');});
+document.addEventListener('drop',e=>{e.preventDefault();document.body.classList.remove('dragging');handleFiles(e.dataTransfer.files);});
+const deb=(fn,ms)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};};
+document.getElementById('search').oninput=deb(loadPhotos,280);
+document.getElementById('sort').onchange=loadPhotos;
+document.getElementById('vg').onclick=()=>{viewMode='grid';document.getElementById('vg').classList.add('on');document.getElementById('vl').classList.remove('on');renderGrid();};
+document.getElementById('vl').onclick=()=>{viewMode='list';document.getElementById('vl').classList.add('on');document.getElementById('vg').classList.remove('on');renderGrid();};
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeDetail();closeClusterModalDirect();}
+  if(!currentDetail)return;
+  const idx=photos.findIndex(p=>p.id===currentDetail.id);
+  if(e.key==='ArrowRight'&&idx<photos.length-1)openDetail(photos[idx+1].id);
+  if(e.key==='ArrowLeft'&&idx>0)openDetail(photos[idx-1].id);
+});
+
+// ── EXPORT / IMPRESSION ───────────────────────────────────────────────────────
+async function imgToB64(src){
+  try{
+    const r=await fetch(src);const blob=await r.blob();
+    return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(blob);});
+  }catch{return null;}
+}
+
+async function printHTML(title, bodyHTML){
+  // Send HTML to server, server saves it as temp file, we load it in a new Electron window
+  const html=`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<meta name="color-scheme" content="light">
+<title>MATERIA — ${title}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+body{background:#fff;color:#000;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;padding:10mm;font-size:8.5pt}
+@media print{@page{size:auto;margin:8mm}.no-print{display:none!important}*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
+h1{font-size:13pt;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-bottom:2pt solid #000;padding-bottom:2.5mm;margin-bottom:5mm}
+h2{font-size:9.5pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:0 0 3mm}
+h3{font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:2.5mm 0 1.5mm;color:#555}
+img{max-width:100%;height:auto;display:block}
+table{border-collapse:collapse;font-size:7pt;margin-bottom:3mm;width:auto}
+th{font-size:5.5pt;letter-spacing:.1em;text-transform:uppercase;color:#888;padding:1mm 4mm 1mm 0;text-align:left;border-bottom:1pt solid #000;white-space:nowrap}
+td{padding:.8mm 4mm .8mm 0;border-bottom:.3pt solid #e0e0e0;color:#111;font-size:7pt;white-space:nowrap}
+td:last-child,th:last-child{padding-right:0}
+tr:last-child td{border-bottom:none}
+.group{margin-bottom:5mm;break-inside:avoid}
+.group-head{background:#000!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color:#fff!important;padding:2mm 4mm;font-weight:700;font-size:8pt;text-transform:uppercase;letter-spacing:.1em;display:flex;justify-content:space-between;align-items:center;margin-bottom:2mm}
+.group-head-count{font-size:6.5pt;color:#aaa!important;font-weight:400;letter-spacing:.06em}
+.sub-head{font-size:5.5pt;letter-spacing:.12em;text-transform:uppercase;color:#888;padding:1mm 0 .8mm;border-bottom:.3pt solid #ccc;margin-bottom:1mm}
+.photo-grid{display:flex;flex-wrap:wrap;gap:2mm;margin-top:2mm}
+.photo-item{flex:0 0 auto;width:52mm}
+.photo-item img{width:100%;aspect-ratio:1;object-fit:cover;display:block;border:.3pt solid #ccc}
+.photo-item-det img{width:100%;display:block;border:.3pt solid #ccc}
+.photo-label{font-size:5pt;color:#888;margin-top:.5mm;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:52mm}
+.cond-intact{color:#1a7a40!important;font-weight:700}
+.cond-reusable{color:#1a4fa0!important;font-weight:700}
+.cond-degraded{color:#a05010!important;font-weight:700}
+.cond-non-reusable{color:#a01010!important;font-weight:700}
+.print-btn{position:fixed;top:10px;right:10px;padding:7px 16px;background:#000;color:#fff;border:none;font-size:8.5pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+</style></head><body>
+<button class="print-btn no-print" onclick="window.print()">IMPRIMER / PDF</button>
+<script>
+// Force background graphics option in Chrome
+document.querySelectorAll('.group-head').forEach(el=>{
+  el.style.setProperty('background','#000','important');
+  el.style.setProperty('-webkit-print-color-adjust','exact','important');
+  el.style.setProperty('print-color-adjust','exact','important');
+  el.style.setProperty('color','#fff','important');
+});
+<\/script>
+<div style="display:flex;align-items:baseline;gap:6mm;margin-bottom:5mm;border-bottom:1.5pt solid #000;padding-bottom:2mm">
+  <span style="font-size:13pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase">MATERIA</span>
+  <span style="font-size:9pt;letter-spacing:.06em;text-transform:uppercase;color:#555">${title}</span>
+  <span style="margin-left:auto;font-size:7pt;color:#888">${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}</span>
+</div>
+${bodyHTML}
+</body></html>`;
+
+  // POST to server which saves the HTML and returns a URL to open
+  const res = await fetch('/api/print-preview', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({html, title})
+  }).then(r=>r.json());
+
+  if(res.url){
+    // Open in system browser (Chrome/Edge) which supports printing properly
+    window.open(res.url, '_blank');
+  }
+}
+
+async function buildPrintHTML(section){
+  const title=currentProject.name;
+  let body='';
+
+  if(section==='inventory'){
+    const data=await fetch(`/api/${currentProject.id}/inventory`).then(r=>r.json());
+    const famLabels={};data.taxonomy.forEach(f=>{famLabels[f.id]=f.label;f.subs.forEach(s=>{famLabels[s.id]=s.label;});});
+
+    // Faithful reproduction of the UI table style — black on white
+    const COND_STYLES={
+      'intact':    'background:#e8f7ef;color:#1a7a3e;border:1px solid #1a7a3e',
+      'reusable':  'background:#e8f0fb;color:#1a4db5;border:1px solid #1a4db5',
+      'degraded':  'background:#fff3e0;color:#b35a00;border:1px solid #b35a00',
+      'non-reusable':'background:#fde8e8;color:#b01e1e;border:1px solid #b01e1e',
+    };
+
+    body += `<div style="font-size:8pt;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#888;margin-bottom:6mm">Inventaire Matériel — ${totalInvItems} éléments</div>`;
+
+    for(const fam of data.taxonomy){
+      const famData=data.aggregated[fam.id];if(!famData)continue;
+      let famTotal=0;
+
+      // Collect all subs/rows first
+      let allSubsHTML='';
+      for(const sub of fam.subs){
+        const subData=famData[sub.id];if(!subData)continue;
+        let subRows='';
+        for(const [elem,info] of Object.entries(subData)){
+          famTotal+=info.quantity;
+          // Build condition badges
+          const condBadges=Object.entries(info.conditions).map(([c,n])=>{
+            const st=COND_STYLES[c]||COND_STYLES['degraded'];
+            return `<span style="display:inline-block;font-size:6pt;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:1px 5px;${st}">${n} ${c.replace('-',' ')}</span>`;
+          }).join(' ');
+          subRows+=`<tr>
+            <td style="font-size:8.5pt;font-weight:500;padding:3mm 3mm;border-bottom:0.5pt solid #ddd">${elem}</td>
+            <td style="font-size:11pt;font-weight:700;color:#000;padding:3mm;border-bottom:0.5pt solid #ddd;text-align:center">${info.quantity}</td>
+            <td style="padding:3mm;border-bottom:0.5pt solid #ddd">${condBadges}</td>
+            <td style="font-size:7pt;color:#888;padding:3mm;border-bottom:0.5pt solid #ddd;text-align:center">${info.photos.length}</td>
+          </tr>`;
+        }
+        if(!subRows)continue;
+        allSubsHTML+=`
+          <div style="font-size:6.5pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#999;padding:3mm 3mm 1mm">
+            ${sub.label}
+          </div>
+          <table style="width:100%;border-collapse:collapse;margin-bottom:2mm">
+            <tr style="background:#f5f5f5">
+              <th style="font-size:5.5pt;letter-spacing:.12em;text-transform:uppercase;color:#aaa;padding:2mm 3mm;text-align:left;border-bottom:1pt solid #ddd;font-weight:700">Élément</th>
+              <th style="font-size:5.5pt;letter-spacing:.12em;text-transform:uppercase;color:#aaa;padding:2mm 3mm;text-align:center;border-bottom:1pt solid #ddd;font-weight:700;width:12mm">Qté</th>
+              <th style="font-size:5.5pt;letter-spacing:.12em;text-transform:uppercase;color:#aaa;padding:2mm 3mm;text-align:left;border-bottom:1pt solid #ddd;font-weight:700">État</th>
+              <th style="font-size:5.5pt;letter-spacing:.12em;text-transform:uppercase;color:#aaa;padding:2mm 3mm;text-align:center;border-bottom:1pt solid #ddd;font-weight:700;width:16mm">Photos</th>
+            </tr>
+            ${subRows}
+          </table>`;
+      }
+      if(!allSubsHTML)continue;
+
+      // Collect associated photos
+      const famPhotoIds=[];
+      Object.values(famData).forEach(s=>Object.values(s).forEach(info=>info.photos.forEach(pid=>{if(!famPhotoIds.includes(pid))famPhotoIds.push(pid);})));
+
+      let photosHTML='';
+      for(const pid of famPhotoIds){
+        const ph=photos.find(p=>p.id===pid);if(!ph)continue;
+        const src=ph.preview||(ph.file_type==='image'?ph.path:'')||ph.thumb||'';
+        if(!src)continue;
+        const b64=await imgToB64(src);
+        if(b64)photosHTML+=`<div style="overflow:hidden;border:0.5pt solid #ddd">
+          <img src="${b64}" style="width:100%;aspect-ratio:1;object-fit:cover;display:block">
+        </div>`;
+      }
+
+      const photosSection=photosHTML?`
+        <div style="font-size:6pt;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#aaa;padding:2mm 3mm 1.5mm;border-top:0.5pt solid #eee">
+          ${famPhotoIds.length} photo${famPhotoIds.length>1?'s':''} associée${famPhotoIds.length>1?'s':''}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(28mm,1fr));gap:2mm;padding:0 3mm 3mm">
+          ${photosHTML}
+        </div>`:'';
+
+      body+=`<div style="margin-bottom:5mm;border:1pt solid #ddd;page-break-inside:avoid">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:3mm 4mm;background:#f0f0f0;border-bottom:1pt solid #ddd">
+          <span style="font-size:8pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase">${fam.label}</span>
+          <span style="font-size:7.5pt;color:#888;font-weight:400">${famTotal} éléments</span>
+        </div>
+        <div>${allSubsHTML}</div>
+        ${photosSection}
+      </div>`;
+    }
+
+  }else if(section==='classement'){
+    body+=`<h2>Classement Typologique</h2>`;
+    for(const type of CLASS_TYPES){
+      const auto=photos.filter(p=>{
+        const invMatch=(p.inventory||[]).some(item=>type.keywords.some(kw=>item.element.toLowerCase().includes(kw.toLowerCase())));
+        const descMatch=type.keywords.some(kw=>(p.description||'').toLowerCase().includes(kw.toLowerCase()));
+        return invMatch||descMatch;
+      });
+      const overrideRemove=new Set((classementOverrides[type.id]?.remove)||[]);
+      const finalPhotos=auto.filter(p=>!overrideRemove.has(p.id));
+      if(!finalPhotos.length)continue;
+      body+=`<div class="group">
+        <div class="group-head"><span>${type.label}</span><span class="group-head-count">${finalPhotos.length} photo${finalPhotos.length>1?'s':''}</span></div>
+        <div class="group-body"><div class="photo-grid">`;
+      for(const p of finalPhotos){
+        const src=p.preview||(p.file_type==='image'?p.path:'')||p.thumb||'';
+        if(!src)continue;
+        const b64=await imgToB64(src);
+        if(b64)body+=`<div class="photo-item"><img src="${b64}"><div class="photo-label">${p.original_name}</div></div>`;
+      }
+      body+=`</div></div></div>`;
+    }
+
+  }else if(section==='proprietes'){
+    body+=`<div class="group-head" style="background:#000!important;-webkit-print-color-adjust:exact!important;margin-bottom:4mm"><span>Propriétés physico-chimiques</span><span class="group-head-count">${Object.keys(elementProperties).length} élément${Object.keys(elementProperties).length>1?'s':''} caractérisé${Object.keys(elementProperties).length>1?'s':''}</span></div>`;
+    const elementsP = aggregateUniqueElements();
+    body += `<table style="width:100%;border-collapse:collapse;font-size:7pt;margin-bottom:5mm"><thead><tr style="background:#000;color:#fff;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important">
+      <th style="padding:3mm;text-align:left;font-size:6.5pt;letter-spacing:.08em;text-transform:uppercase">Élément</th>
+      <th style="padding:3mm">Qté</th><th style="padding:3mm">ρ</th><th style="padding:3mm">σc</th><th style="padding:3mm">σt</th><th style="padding:3mm">E</th><th style="padding:3mm">λ</th><th style="padding:3mm">Feu</th>
+      <th style="padding:3mm;text-align:left">Rôle réemploi</th><th style="padding:3mm;text-align:left">Mise en œuvre</th>
+    </tr></thead><tbody>`;
+    elementsP.forEach(e => {
+      const p = elementProperties[e.name] || {};
+      body += `<tr style="border-bottom:.3pt solid #ddd">
+        <td style="padding:2mm;font-weight:600">${e.name}</td>
+        <td style="padding:2mm;text-align:center;color:#666">${e.totalQty}</td>
+        <td style="padding:2mm;text-align:center">${p.density_kg_m3?p.density_kg_m3+' kg/m³':'—'}</td>
+        <td style="padding:2mm;text-align:center">${p.compression_mpa?p.compression_mpa+' MPa':'—'}</td>
+        <td style="padding:2mm;text-align:center">${p.tensile_mpa?p.tensile_mpa+' MPa':'—'}</td>
+        <td style="padding:2mm;text-align:center">${p.modulus_gpa?p.modulus_gpa+' GPa':'—'}</td>
+        <td style="padding:2mm;text-align:center">${p.lambda_w_mk!=null?p.lambda_w_mk+' W/mK':'—'}</td>
+        <td style="padding:2mm;text-align:center">${p.fire_class||'—'}</td>
+        <td style="padding:2mm">${p.reuse_role||'—'}</td>
+        <td style="padding:2mm">${p.installation||'—'}</td>
+      </tr>`;
+    });
+    body += '</tbody></table>';
+    PROP_CATEGORIES.forEach(cat => {
+      const matched = elementsP.filter(e => { const p=elementProperties[e.name]; return p && cat.test(p); });
+      if(!matched.length) return;
+      body += `<div class="group" style="margin-bottom:4mm"><div class="group-head" style="background:#000!important;-webkit-print-color-adjust:exact!important;font-size:7pt"><span>${cat.label}</span><span class="group-head-count">${matched.length} — ${cat.desc}</span></div>
+        <ul style="font-size:7pt;padding-left:5mm;margin:2mm 0">${matched.map(e=>`<li>${e.name} <span style="color:#888">(${e.totalQty} u.)</span></li>`).join('')}</ul></div>`;
+    });
+
+  }else if(section==='geometrie'){
+    body+=`<div class="group-head" style="background:#000!important;-webkit-print-color-adjust:exact!important;margin-bottom:4mm"><span>Classification Géométrique</span><span class="group-head-count">${photos.length} photo${photos.length>1?'s':''} au total</span></div>`;
+    for(const type of GEOM_TYPES){
+      const autoIds = photos.filter(p=>classifyPhotoGeometry(p).includes(type.id)).map(p=>p.id);
+      const overrideAdd = (geometrieOverrides[type.id]?.add||[]);
+      const overrideRemove = new Set(geometrieOverrides[type.id]?.remove||[]);
+      const finalIds = [...new Set([...autoIds, ...overrideAdd])].filter(id=>!overrideRemove.has(id));
+      if(!finalIds.length) continue;
+      body+=`<div class="group">
+        <div class="group-head" style="background:#000!important;-webkit-print-color-adjust:exact!important;font-size:7pt"><span>${type.label}</span><span class="group-head-count">${finalIds.length} photo${finalIds.length>1?'s':''} — ${type.desc}</span></div>
+        <div class="group-body"><div class="photo-grid">`;
+      for(const pid of finalIds){
+        const p=photos.find(x=>x.id===pid); if(!p)continue;
+        const src=p.preview||(p.file_type==='image'?p.path:'')||p.thumb||'';
+        if(!src)continue;
+        const b64=await imgToB64(src);
+        if(b64) body+=`<div class="photo-item"><img src="${b64}"><div class="photo-label">${p.original_name}</div></div>`;
+      }
+      body+=`</div></div></div>`;
+    }
+
+  }else if(section==='map'){
+    body+=`<div class="group-head" style="background:#000!important;-webkit-print-color-adjust:exact!important;margin-bottom:4mm"><span>Plan de Localisation</span><span class="group-head-count">${mapData.photos.length} photos · ${mapData.clusters.length} clusters</span></div>`;
+    const mapSrc=document.getElementById('map-img').src;
+    const mapB64=await imgToB64(mapSrc);
+    if(mapB64){
+      const mapImgEl=await new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>res(null);i.src=mapB64;});
+      const mw=mapImgEl?mapImgEl.naturalWidth:1000, mh=mapImgEl?mapImgEl.naturalHeight:700;
+      let svgPins='';
+      mapData.photos.forEach(p=>{
+        const px=(p.location.x*mw).toFixed(1), py=(p.location.y*mh).toFixed(1);
+        svgPins+=`<circle cx="${px}" cy="${py}" r="10" fill="#ff3b30" stroke="white" stroke-width="2.5"/>`;
+      });
+      mapData.clusters.forEach(c=>{
+        const n=mapData.photos.filter(p=>p.cluster_id===c.id).length;
+        const px=(c.x*mw).toFixed(1), py=(c.y*mh).toFixed(1);
+        const r=Math.max(24,Math.min(48,16+n*6));
+        svgPins+=`<circle cx="${px}" cy="${py}" r="${r}" fill="rgba(255,59,48,0.25)" stroke="rgb(255,59,48)" stroke-width="2.5"/>`;
+        svgPins+=`<text x="${px}" y="${py}" text-anchor="middle" dominant-baseline="middle" font-family="Helvetica Neue,Helvetica,Arial" font-size="${r*0.75}" font-weight="bold" fill="white">${n}</text>`;
+        svgPins+=`<text x="${px}" y="${Number(py)+r+8}" text-anchor="middle" font-family="Helvetica Neue,Helvetica,Arial" font-size="10" fill="#333">${c.label}</text>`;
+      });
+      body+=`<div style="position:relative;display:inline-block;max-width:100%;margin-bottom:4mm;width:100%">
+        <img src="${mapB64}" style="width:100%;display:block">
+        <svg style="position:absolute;top:0;left:0;width:100%;height:100%;overflow:visible" viewBox="0 0 ${mw} ${mh}" preserveAspectRatio="xMidYMid meet">${svgPins}</svg>
+      </div>`;
+    }
+    if(mapData.clusters.length){
+      body+=`<table style="margin-top:2mm"><tr><th>Cluster</th><th>Photos</th></tr>`;
+      mapData.clusters.forEach(c=>{body+=`<tr><td>${c.label}</td><td>${mapData.photos.filter(p=>p.cluster_id===c.id).length}</td></tr>`;});
+      body+=`</table>`;
+    }
+
+  }else if(section==='detection'){
+    const byKeyword={};
+    photos.forEach(p=>{
+      (p.detection_entries||[]).forEach(entry=>{
+        const kw=(entry.keywords||[]).join(', ')||'detection';
+        if(!byKeyword[kw])byKeyword[kw]=[];
+        byKeyword[kw].push({photo:p,entry});
+      });
+    });
+    const totalObjs=Object.values(byKeyword).reduce((s,arr)=>s+arr.reduce((ss,e)=>ss+(e.entry.detections||[]).reduce((sss,d)=>sss+d.count,0),0),0);
+    body+=`<div class="group-head" style="background:#000!important;-webkit-print-color-adjust:exact!important;margin-bottom:4mm"><span>Détection SAM3</span><span class="group-head-count">${totalObjs} objets · ${Object.keys(byKeyword).length} mot${Object.keys(byKeyword).length>1?'s-clés':'clé'}</span></div>`;
+    for(const [kw,entries] of Object.entries(byKeyword)){
+      const kwObjs=entries.reduce((s,e)=>s+(e.entry.detections||[]).reduce((ss,d)=>ss+d.count,0),0);
+      body+=`<div class="group"><div class="group-head" style="background:#000!important;-webkit-print-color-adjust:exact!important;font-size:7pt"><span>🎯 ${kw.toUpperCase()}</span><span class="group-head-count">${entries.length} photo${entries.length>1?'s':''} · ${kwObjs} obj.</span></div><div class="photo-grid" style="margin-top:2mm">`;
+      for(const {photo,entry} of entries){
+        const labels=(entry.detections||[]).map(d=>`${d.count}x ${d.label}`).join(' · ');
+        body+=`<div class="photo-item"><img src="data:image/jpeg;base64,${entry.annotated_b64}" style="aspect-ratio:auto"><div class="photo-label">${photo.original_name}</div><div class="photo-label" style="color:#888">${labels}</div></div>`;
+      }
+      body+=`</div></div>`;
+    }
+  }
+
+  return {title,body};
+}
+
+async function exportSection(section, ev){
+  if(!currentProject)return;
+  const btn=ev?.target||null;const orig=btn?btn.textContent:'';
+  if(btn){btn.textContent='…';btn.disabled=true;}
+  try{
+    const {title,body}=await buildPrintHTML(section);
+    await printHTML(title,body);
+  }catch(e){alert('Erreur: '+e.message);console.error(e);}
+  if(btn){btn.textContent=orig;btn.disabled=false;}
+}
+
+async function exportAll(ev){
+  if(!currentProject)return;
+  const btn=ev?.target||null;const orig=btn?btn.textContent:'Imprimer tout';
+  if(btn){btn.textContent='Préparation…';btn.disabled=true;}
+  try{
+    const sections=['inventory','classement','map','detection'];
+    let allBody='';
+    for(const s of sections){
+      const {body}=await buildPrintHTML(s);
+      allBody+=`<div style="margin-bottom:10mm">${body}</div>`;
+    }
+    printHTML(currentProject.name+' — Atlas complet',allBody);
+  }catch(e){alert('Erreur: '+e.message);console.error(e);}
+  if(btn){btn.textContent=orig;btn.disabled=false;}
+}
+
+
+function fmtSize(b){if(!b)return'';return b>1048576?`${(b/1048576).toFixed(1)} MB`:`${(b/1024).toFixed(0)} KB`;}
+
+// ── BOOT ───────────────────────────────────────────────────────────────────────
+checkKeys();
+loadProjectList();
+</script>
+</body>
+</html>
